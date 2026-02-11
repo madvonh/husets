@@ -40,3 +40,42 @@ Thumbs.db
 .vs/
 **/bin/
 **/obj/
+
+# Logs and databases #
+######################
+*.log
+*.sql
+*.sqlite
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# .NET Build Artifacts #
+########################
+bin/
+obj/
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+*.dll
+*.exe
+*.pdb
+*.cache
+*.props
+*.targets
+
+# Visual Studio Files #
+#######################
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
