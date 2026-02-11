@@ -37,7 +37,6 @@ Thumbs.db
 
 # Directories #
 #####################
-.vs/*
-*/bin/*
-*/obj/*
-*/Properties/*
+.vs/
+**/bin/
+**/obj/
