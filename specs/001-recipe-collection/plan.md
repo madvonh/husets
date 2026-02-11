@@ -16,7 +16,7 @@ Minimal architecture:
 
 ## Technical Context
 
-**Language/Version**:  .Net c# for API; React with Vite and TypeScript for frontend  
+**Language/Version**:  .Net c# for API; React with Vite and TypeScript for frontend, Tailwind CSS for styling, The site is responsive and ready for mobile.  
 **Primary Dependencies**:  minimal API; minimal frontend framework/build tool  
 **Storage**: Azure Cosmos DB (API-managed access only) using a docker image locally for development
 **Testing**: must support test-first workflow; contract tests with fluent validation for API changes 

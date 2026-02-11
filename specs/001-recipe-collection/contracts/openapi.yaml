@@ -1,0 +1,431 @@
+openapi: 3.0.3
+info:
+  title: Recipe Collection API
+  version: 1.0.0
+  description: |
+    Backend API for Recipe Collection feature.
+    Supports photo upload, OCR extraction, recipe CRUD, ingredient persistence, and tag-based search.
+
+servers:
+  - url: https://localhost:5001
+    description: Local development
+  - url: https://api.husets.example.com
+    description: Production (placeholder)
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      description: Returns 200 if API and Cosmos DB are healthy
+      operationId: getHealth
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  dependencies:
+                    type: object
+                    properties:
+                      cosmosDb:
+                        type: string
+                        example: connected
+        '503':
+          description: Service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /ocr:
+    post:
+      summary: Extract text from uploaded recipe photo
+      description: |
+        Accepts a recipe photo (multipart upload), stores it in Blob Storage,
+        runs Azure AI Vision Read OCR, and returns extracted text + imageRef.
+      operationId: extractTextFromImage
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - image
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: Recipe photo (JPEG, PNG)
+      responses:
+        '200':
+          description: OCR extraction successful
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+              description: Request correlation ID
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - imageRef
+                  - extractedText
+                properties:
+                  imageRef:
+                    type: string
+                    description: Blob storage reference/path for the uploaded image
+                    example: "recipes/2026-02-10/abc123.jpg"
+                  extractedText:
+                    type: string
+                    description: OCR-extracted text from the image
+                    example: "Chocolate Chip Cookies\n\nIngredients:\n- 2 cups flour\n- 1 cup sugar..."
+        '400':
+          description: Invalid request (missing image, unsupported format, too large)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error (OCR failure, Blob storage unavailable)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /recipes:
+    post:
+      summary: Create a new recipe
+      description: |
+        Creates a recipe from edited text + imageRef (from /ocr).
+        Parses ingredients and persists them as separate RecipeIngredient items.
+      operationId: createRecipe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - rawText
+                - imageRef
+              properties:
+                title:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                  example: "Chocolate Chip Cookies"
+                rawText:
+                  type: string
+                  description: Full recipe text (user-edited after OCR)
+                  example: "Ingredients:\n- 2 cups flour\n- 1 cup sugar\n\nInstructions:\nMix and bake."
+                imageRef:
+                  type: string
+                  description: Image reference from /ocr response
+                  example: "recipes/2026-02-10/abc123.jpg"
+                tags:
+                  type: array
+                  items:
+                    type: string
+                  description: Optional initial tags (normalized server-side)
+                  example: ["dessert", "cookies"]
+      responses:
+        '201':
+          description: Recipe created successfully
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeDetail'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      summary: Search recipes
+      description: |
+        Returns recipes matching optional query (text contains) and/or tag filter.
+        MVP search uses Cosmos CONTAINS over denormalized searchText field.
+      operationId: searchRecipes
+      parameters:
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Free-text search (case-insensitive contains)
+          example: "chocolate"
+        - name: tag
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by normalized tag (case-insensitive)
+          example: "dessert"
+      responses:
+        '200':
+          description: Search results
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  recipes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RecipeSummary'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /recipes/{id}:
+    get:
+      summary: Get recipe details
+      description: Returns full recipe including ingredients, tags, and imageRef
+      operationId: getRecipeById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Recipe ID
+          example: "recipe_abc123"
+      responses:
+        '200':
+          description: Recipe found
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeDetail'
+        '404':
+          description: Recipe not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /recipes/{id}/tags:
+    post:
+      summary: Add tag to recipe
+      description: Adds a tag to a recipe (normalized server-side; idempotent)
+      operationId: addTagToRecipe
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "recipe_abc123"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - tag
+              properties:
+                tag:
+                  type: string
+                  minLength: 1
+                  maxLength: 50
+                  example: "dessert"
+      responses:
+        '200':
+          description: Tag added (or already existed)
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeDetail'
+        '404':
+          description: Recipe not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /recipes/{id}/tags/{tag}:
+    delete:
+      summary: Remove tag from recipe
+      description: Removes a tag from a recipe (idempotent)
+      operationId: removeTagFromRecipe
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "recipe_abc123"
+        - name: tag
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Tag to remove (normalized before lookup)
+          example: "dessert"
+      responses:
+        '200':
+          description: Tag removed (or did not exist)
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeDetail'
+        '404':
+          description: Recipe not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Machine-readable error code
+          example: "VALIDATION_ERROR"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Title is required"
+        correlationId:
+          type: string
+          description: Request correlation ID for tracing
+          example: "abc123-def456"
+
+    RecipeSummary:
+      type: object
+      required:
+        - id
+        - title
+        - createdAt
+      properties:
+        id:
+          type: string
+          example: "recipe_abc123"
+        title:
+          type: string
+          example: "Chocolate Chip Cookies"
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["dessert", "cookies"]
+        createdAt:
+          type: string
+          format: date-time
+          example: "2026-02-10T10:30:00Z"
+        imageRef:
+          type: string
+          example: "recipes/2026-02-10/abc123.jpg"
+
+    RecipeDetail:
+      type: object
+      required:
+        - id
+        - title
+        - rawText
+        - imageRef
+        - createdAt
+      properties:
+        id:
+          type: string
+          example: "recipe_abc123"
+        title:
+          type: string
+          example: "Chocolate Chip Cookies"
+        rawText:
+          type: string
+          description: Full recipe text as saved
+          example: "Ingredients:\n- 2 cups flour\n- 1 cup sugar\n\nInstructions:\nMix and bake at 350°F."
+        imageRef:
+          type: string
+          example: "recipes/2026-02-10/abc123.jpg"
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["dessert", "cookies"]
+        ingredients:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ingredient'
+        createdAt:
+          type: string
+          format: date-time
+          example: "2026-02-10T10:30:00Z"
+
+    Ingredient:
+      type: object
+      required:
+        - freeText
+        - position
+      properties:
+        freeText:
+          type: string
+          description: Original ingredient line exactly as entered
+          example: "2 cups all-purpose flour"
+        canonicalName:
+          type: string
+          description: Normalized ingredient name (best-effort; may be null)
+          example: "flour"
+        position:
+          type: integer
+          description: Zero-based order in the recipe
+          example: 0
