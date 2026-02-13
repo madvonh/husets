@@ -79,3 +79,7 @@ obj/
 *.suo
 *.userosscache
 *.sln.docstates
+
+# Settings and configuration files #
+##############################
+appsettings.local.json

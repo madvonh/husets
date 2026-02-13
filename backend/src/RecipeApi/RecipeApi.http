@@ -1,6 +1,66 @@
 @RecipeApi_HostAddress = http://localhost:5137
+@RecipeApi_HostAddress_Https = https://localhost:7137
 
-GET {{RecipeApi_HostAddress}}/weatherforecast/
+### Service info (root)
+GET {{RecipeApi_HostAddress}}/
 Accept: application/json
 
-###
+### Health check
+GET {{RecipeApi_HostAddress}}/health
+Accept: application/json
+
+### List recipes (optionally filter by query or tag)
+GET {{RecipeApi_HostAddress}}/recipes
+Accept: application/json
+
+### Search recipes by text
+GET {{RecipeApi_HostAddress}}/recipes?query=pasta
+Accept: application/json
+
+### Filter recipes by tag
+GET {{RecipeApi_HostAddress}}/recipes?tag=dinner
+Accept: application/json
+
+### Create recipe
+# Note: Ingredients are parsed from RawText on creation.
+POST {{RecipeApi_HostAddress}}/recipes
+Content-Type: application/json
+Accept: application/json
+
+{
+	"title": "Test Recipe",
+	"rawText": "2 eggs\n1 cup milk\nSalt",
+	"imageRef": null,
+	"tags": ["Dinner", "Quick"]
+}
+
+### Get recipe by id
+# Replace recipe_... with an id returned from the Create recipe call.
+GET {{RecipeApi_HostAddress}}/recipes/recipe_REPLACE_ME
+Accept: application/json
+
+### Add tag to recipe
+POST {{RecipeApi_HostAddress}}/recipes/recipe_REPLACE_ME/tags
+Content-Type: application/json
+Accept: application/json
+
+{
+	"tag": "Vegetarian"
+}
+
+### Remove tag from recipe
+DELETE {{RecipeApi_HostAddress}}/recipes/recipe_REPLACE_ME/tags/vegetarian
+Accept: application/json
+
+### OCR (multipart/form-data)
+# Requires a real image file path on your machine.
+POST {{RecipeApi_HostAddress}}/ocr
+Accept: application/json
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="image"; filename="receipt.jpg"
+Content-Type: image/jpeg
+
+< ./receipt.jpg
+--boundary--

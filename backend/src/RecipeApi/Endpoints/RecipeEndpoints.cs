@@ -16,11 +16,12 @@ public static class RecipeEndpoints
         var AllowedImageTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/webp" };
 
         app.MapPost("/ocr", async (
-            [FromForm] IFormFile image,
+            [FromForm] OcrRequest request,
             IOcrService ocrService,
             IBlobStorageService blobService,
             ILogger<Program> logger) =>
         {
+            var image = request.Image;
             if (image == null || image.Length == 0)
             {
                 return Results.BadRequest(new ErrorResponse
@@ -79,7 +80,11 @@ public static class RecipeEndpoints
                 logger.LogError(ex, "OCR processing failed");
                 return Results.Problem("OCR processing failed. Please try again.");
             }
-        }).DisableAntiforgery();
+        })
+        .Accepts<OcrRequest>("multipart/form-data")
+        .Produces<OcrResponse>(StatusCodes.Status200OK)
+        .Produces<ErrorResponse>(StatusCodes.Status400BadRequest)
+        .DisableAntiforgery();
 
         app.MapPost("/recipes", async (
             CreateRecipeRequest request,
@@ -103,7 +108,7 @@ public static class RecipeEndpoints
             try
             {
                 var recipeId = $"recipe_{Guid.NewGuid()}";
-                var normalizedTags = request.Tags != null ? TagNormalizer.Normalize(request.Tags) : new List<string>();
+                var normalizedTags = request.Tags != null ? TagNormalizer.Normalize(request.Tags) : [];
                 var searchText = SearchTextBuilder.BuildSearchText(request.Title, request.RawText);
 
                 // Create recipe

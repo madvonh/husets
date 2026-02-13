@@ -1,0 +1,53 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Backend: Debug (RecipeApi)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-backend",
+      "program": "${workspaceFolder}/backend/src/RecipeApi/bin/Debug/net9.0/RecipeApi.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/backend/src/RecipeApi",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "https://localhost:7137;http://localhost:5137"
+      }
+    },
+    {
+      "name": "Frontend: Debug (Chrome)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/frontend",
+      "preLaunchTask": "start-frontend",
+      "serverReadyAction": {
+        "pattern": "Local:.*(https?://localhost:[0-9]+)",
+        "uriFormat": "%s",
+        "action": "debugWithChrome"
+      }
+    },
+    {
+      "name": "Frontend: Debug (Edge)",
+      "type": "msedge",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/frontend",
+      "preLaunchTask": "start-frontend"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug: Full Stack (Backend + Frontend)",
+      "configurations": [
+        "Backend: Debug (RecipeApi)",
+        "Frontend: Debug (Chrome)"
+      ],
+      "stopAll": true,
+      "presentation": {
+        "group": "fullstack",
+        "order": 1
+      }
+    }
+  ]
+}

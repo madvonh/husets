@@ -2,8 +2,8 @@ using FluentValidation;
 using Microsoft.Azure.Cosmos;
 using RecipeApi.Middleware;
 using RecipeApi.Services;
-using RecipeApi.Validators;
 using RecipeApi.Endpoints;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +22,18 @@ builder.Services.AddCors(options =>
 
 // Add FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+// Add Swagger/OpenAPI
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Recipe Collection API",
+        Version = "v1",
+        Description = "API for managing recipes with OCR support"
+    });
+});
 
 // Add Azure services (or fallback in-memory implementation for local/tests)
 var cosmosConnectionString = builder.Configuration["CosmosDb:ConnectionString"];
@@ -51,8 +63,20 @@ else
     builder.Services.AddSingleton<IBlobStorageService, InMemoryBlobStorageService>();
 }
 
-// Add OCR service
-builder.Services.AddSingleton<IOcrService, AzureOcrService>();
+// Add OCR service (Azure Vision or Tesseract fallback)
+var azureVisionEndpoint = builder.Configuration["AzureVision:Endpoint"];
+var azureVisionApiKey = builder.Configuration["AzureVision:ApiKey"];
+
+if (!string.IsNullOrEmpty(azureVisionEndpoint) && !string.IsNullOrEmpty(azureVisionApiKey))
+{
+    builder.Services.AddSingleton<IOcrService, AzureOcrService>();
+}
+else
+{
+    // Fallback: use Tesseract for local OCR without Azure
+    builder.Services.AddSingleton<IOcrService, TesseractOcrService>();
+}
+
 builder.Services.AddTransient<IIngredientParser, IngredientParser>();
 
 // Add Health Checks
@@ -64,6 +88,16 @@ builder.Services.AddSingleton<CosmosDbHealthCheck>();
 
 var app = builder.Build();
 
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Recipe Collection API v1");
+        options.RoutePrefix = string.Empty;
+    });
+}
+
 // Use middleware
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<GlobalExceptionMiddleware>();
@@ -71,7 +105,6 @@ app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseCors();
 app.UseHttpsRedirection();
 
-// Map endpoints
 app.MapHealthChecks("/health");
 
 app.MapGet("/", () => Results.Ok(new { service = "Recipe Collection API", version = "1.0.0" }));
