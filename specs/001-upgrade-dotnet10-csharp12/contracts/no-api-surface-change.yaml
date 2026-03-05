@@ -1,0 +1,20 @@
+openapi: 3.0.3
+info:
+  title: Recipe API Surface Compatibility Contract
+  version: 1.0.0
+  description: |
+    This contract asserts that feature 001-upgrade-dotnet10-csharp12 introduces
+    no HTTP API surface changes. Runtime/toolchain migration must preserve
+    existing endpoint paths, request/response schemas, and status code behavior.
+servers:
+  - url: https://localhost
+paths: {}
+components: {}
+x-contract-type: non-functional-platform-upgrade
+x-assertions:
+  - id: API-NO-CHANGE-001
+    requirement: Public HTTP API paths remain unchanged.
+  - id: API-NO-CHANGE-002
+    requirement: Existing request and response schemas remain unchanged.
+  - id: API-NO-CHANGE-003
+    requirement: Existing success/error status code behavior remains unchanged.

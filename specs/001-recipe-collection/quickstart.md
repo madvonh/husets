@@ -9,7 +9,7 @@ This guide covers running the Recipe Collection app locally for development.
 
 ### Tools
 
-- **.NET SDK** 8.0 or higher
+- **.NET SDK** 10.0 or higher (pinned via `global.json` at repository root)
 - **Node.js** 18+ and **npm** 9+
 - **Docker Desktop** (for Cosmos DB emulator)
 - **Azure CLI** (optional, for Blob Storage emulator or real Azure resources)
@@ -116,7 +116,7 @@ az cognitiveservices account keys list `
 
 ### Configuration File
 
-Create `backend/src/RecipeApi/appsettings.Development.json` (or use environment variables):
+Create `src/backend/src/RecipeApi/appsettings.Development.json` (or use environment variables):
 
 ```json
 {
@@ -146,7 +146,7 @@ Create `backend/src/RecipeApi/appsettings.Development.json` (or use environment 
 **Security Note**: Never commit real API keys. Use User Secrets for local dev:
 
 ```powershell
-cd backend/src/RecipeApi
+cd src/backend/src/RecipeApi
 dotnet user-secrets set "AzureVision:ApiKey" "<YOUR_KEY>"
 ```
 
@@ -155,7 +155,7 @@ dotnet user-secrets set "AzureVision:ApiKey" "<YOUR_KEY>"
 ## Step 3: Run Backend
 
 ```powershell
-cd backend/src/RecipeApi
+cd src/backend/src/RecipeApi
 
 # Restore dependencies
 dotnet restore
@@ -180,7 +180,7 @@ Invoke-RestMethod -Uri "https://localhost:5001/health" -SkipCertificateCheck
 
 ## Step 4: Configure Frontend Environment Variables
 
-Create `frontend/.env.local`:
+Create `src/frontend/.env.local`:
 
 ```env
 VITE_API_BASE_URL=https://localhost:5001
@@ -191,7 +191,7 @@ VITE_API_BASE_URL=https://localhost:5001
 ## Step 5: Run Frontend
 
 ```powershell
-cd frontend
+cd src/frontend
 
 # Install dependencies
 npm install
