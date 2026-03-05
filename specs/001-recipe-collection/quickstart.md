@@ -275,6 +275,15 @@ Or let the backend auto-create on first upload (add logic in BlobService).
 
 ## Troubleshooting
 
+### Upload or Save Fails from Frontend
+
+- Symptom: upload/save shows network errors (for example, `Failed to fetch`) when calling `/ocr` or `/recipes`.
+- Cause: `VITE_API_BASE_URL` does not match the backend URL/profile currently running.
+- Fix:
+  - If backend runs on HTTP profile: set `VITE_API_BASE_URL=http://localhost:5137`
+  - If backend runs on HTTPS profile: set `VITE_API_BASE_URL=https://localhost:7137`
+  - Restart the frontend dev server after changing `.env.local`.
+
 ### Cosmos DB Emulator Won't Start
 
 - Ensure Docker is running

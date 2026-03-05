@@ -20,10 +20,10 @@ A **partial MVP implementation** of the Recipe Collection app has been completed
 - [x] Quickstart guide ([specs/001-recipe-collection/quickstart.md](specs/001-recipe-collection/quickstart.md))
 
 ### Phase 1: Project Scaffolding
-- [x] Backend: .NET 9 Minimal API solution ([backend/](backend/))
+- [x] Backend: .NET 9 Minimal API solution ([scr/backend/](scr/backend/))
   - Solution structure: `RecipeApi` project + `RecipeApi.Tests` xUnit project
   - NuGet packages: Cosmos DB, Azure Blob Storage, Azure Vision ImageAnalysis, FluentValidation
-- [x] Frontend: Vite + React + TypeScript + Tailwind CSS ([frontend/](frontend/))
+- [x] Frontend: Vite + React + TypeScript + Tailwind CSS ([scr/frontend/](scr/frontend/))
   - Builds successfully
   - Responsive baseline (mobile-ready)
   - Placeholder pages: Home, Add Recipe, Recipe Detail
@@ -73,7 +73,7 @@ A **partial MVP implementation** of the Recipe Collection app has been completed
 ### Frontend (Critical - Not Yet Implemented)
 
 #### User Story 1 Pages
-- [ ] **Add Recipe Page** ([frontend/src/pages/AddRecipe.tsx](frontend/src/)):
+- [ ] **Add Recipe Page** ([scr/frontend/src/pages/AddRecipe.tsx](scr/frontend/src/)):
   - Image upload UI
   - Call `POST /ocr`
   - Display extracted text in editable textarea
@@ -82,13 +82,13 @@ A **partial MVP implementation** of the Recipe Collection app has been completed
   - Call `POST /recipes`
   - Handle errors (correlation ID display)
   - Mobile-responsive
-- [ ] **Recipe Detail Page** ([frontend/src/pages/RecipeDetail.tsx](frontend/src/)):
+- [ ] **Recipe Detail Page** ([scr/frontend/src/pages/RecipeDetail.tsx](scr/frontend/src/)):
   - Fetch `GET /recipes/{id}`
   - Display title, text, ingredients list, tags, image preview
   - Mobile-responsive
 
 #### User Story 2 Pages
-- [ ] **Home/Search Page** ([frontend/src/pages/Home.tsx](frontend/src/)):
+- [ ] **Home/Search Page** ([scr/frontend/src/pages/Home.tsx](scr/frontend/src/)):
   - Free-text search input
   - Tag filter input
   - Call `GET /recipes?query=&tag=`
@@ -119,27 +119,28 @@ husets/
 │   ├── data-model.md               # Cosmos DB schema
 │   ├── quickstart.md               # Local dev guide
 │   └── contracts/openapi.yaml      # API contract
-├── backend/
-│   ├── RecipeCollection.sln
-│   ├── src/RecipeApi/
-│   │   ├── Program.cs              # Entry point, service registration
-│   │   ├── Models/                 # Domain models, DTOs, errors
-│   │   ├── Services/               # Cosmos, Blob, OCR, ingredient parsing, health checks
-│   │   ├── Middleware/             # Correlation ID, exception handling
-│   │   ├── Validators/             # FluentValidation rules
-│   │   ├── Endpoints/              # Recipe endpoints (OCR, CRUD)
-│   │   └── Utilities/              # Tag normalization, search text builder
-│   └── tests/RecipeApi.Tests/
-│       └── FoundationalTests.cs    # Integration tests (5 passing)
-└── frontend/
-    ├── package.json
-    ├── vite.config.ts
-    ├── tailwind.config.js
-    ├── src/
-    │   ├── main.tsx                # Entry point
-    │   ├── App.tsx                 # Router + placeholder pages
-    │   └── index.css               # Tailwind imports
-    └── .env.example                # API base URL config template
+├── scr/
+│   ├── backend/
+│   │   ├── RecipeCollection.sln
+│   │   ├── src/RecipeApi/
+│   │   │   ├── Program.cs              # Entry point, service registration
+│   │   │   ├── Models/                 # Domain models, DTOs, errors
+│   │   │   ├── Services/               # Cosmos, Blob, OCR, ingredient parsing, health checks
+│   │   │   ├── Middleware/             # Correlation ID, exception handling
+│   │   │   ├── Validators/             # FluentValidation rules
+│   │   │   ├── Endpoints/              # Recipe endpoints (OCR, CRUD)
+│   │   │   └── Utilities/              # Tag normalization, search text builder
+│   │   └── tests/RecipeApi.Tests/
+│   │       └── FoundationalTests.cs    # Integration tests
+│   └── frontend/
+│       ├── package.json
+│       ├── vite.config.ts
+│       ├── tailwind.config.js
+│       ├── src/
+│       │   ├── main.tsx                # Entry point
+│       │   ├── App.tsx                 # Router + placeholder pages
+│       │   └── index.css               # Tailwind imports
+│       └── .env.example                # API base URL config template
 ```
 
 ---
@@ -174,12 +175,12 @@ See [specs/001-recipe-collection/quickstart.md](specs/001-recipe-collection/quic
 
 ```powershell
 # Backend
-cd backend
+cd scr/backend
 dotnet run --project src/RecipeApi
-# Listens on https://localhost:5001
+# Listens on http://localhost:5137 (or https://localhost:7137 with the https launch profile)
 
 # Frontend
-cd frontend
+cd scr/frontend
 npm install
 npm run dev
 # Listens on http://localhost:5173
@@ -187,9 +188,9 @@ npm run dev
 
 **Tests**:
 ```powershell
-cd backend
+cd scr/backend
 dotnet test
-# 5 tests passing (foundational infrastructure tests)
+# 54 tests passing
 ```
 
 ---
@@ -201,6 +202,7 @@ dotnet test
 - **Ingredient Parsing**: Heuristic-based (looks for lines starting with `-`, `•`, or digits under "Ingredients" heading).
 - **Test Coverage**: Basic integration tests exist; contract/unit tests for US1 endpoints are marked complete in tasks but need more coverage.
 - **CORS**: Configured for `http://localhost:5173` (frontend dev server).
+- **Troubleshooting upload/save failures**: If frontend shows network errors on upload or save, verify `VITE_API_BASE_URL` matches the backend URL. Default local setup is `http://localhost:5137` (see `scr/frontend/.env.local`/`.env.example`). If you run backend with HTTPS profile, use `https://localhost:7137` and restart the frontend dev server.
 
 ---
 

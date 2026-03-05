@@ -1,9 +1,13 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using RecipeApi.Models;
 using RecipeApi.Models.DTOs;
+using RecipeApi.Services;
 using Xunit;
 
 namespace RecipeApi.Tests;
@@ -14,7 +18,30 @@ public class ValidationTests : IClassFixture<WebApplicationFactory<Program>>
 
     public ValidationTests(WebApplicationFactory<Program> factory)
     {
-        _client = factory.CreateClient();
+        var configuredFactory = factory.WithWebHostBuilder(builder =>
+        {
+            builder.UseEnvironment("Testing");
+            builder.ConfigureTestServices(services =>
+            {
+                var ocrServiceDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IOcrService));
+                if (ocrServiceDescriptor != null)
+                {
+                    services.Remove(ocrServiceDescriptor);
+                }
+
+                services.AddSingleton<IOcrService, FakeOcrService>();
+            });
+        });
+
+        _client = configuredFactory.CreateClient();
+    }
+
+    private sealed class FakeOcrService : IOcrService
+    {
+        public Task<string> ExtractTextFromImageAsync(Stream imageStream)
+        {
+            return Task.FromResult("Test OCR text");
+        }
     }
 
     [Fact]
@@ -277,7 +304,8 @@ public class ValidationTests : IClassFixture<WebApplicationFactory<Program>>
     {
         // Arrange
         var content = new MultipartFormDataContent();
-        var byteContent = new ByteArrayContent(new byte[1024]); // 1KB file
+        var jpegBytes = Convert.FromBase64String("/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxAQEBUQEA8QDw8PEA8PDw8PEA8QDxAQFREWFhURFRUYHSggGBolGxUVITEhJSkrLi4uFx8zODMtNygtLisBCgoKDQ0NDg0NDisZHhkrKysrKystKy0tKy0rLS0rKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrK//AABEIAAEAAQMBIgACEQEDEQH/xAAWAAEBAQAAAAAAAAAAAAAAAAAAAQL/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAgP/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdAAf/2Q==");
+        var byteContent = new ByteArrayContent(jpegBytes);
         byteContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
         content.Add(byteContent, "image", "test.jpg");
 

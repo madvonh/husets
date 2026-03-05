@@ -65,7 +65,7 @@ public class TagManagementTests : IClassFixture<WebApplicationFactory<Program>>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var updatedRecipe = await response.Content.ReadFromJsonAsync<RecipeDetailResponse>();
         Assert.NotNull(updatedRecipe);
-        Assert.Single(updatedRecipe.Tags.Where(t => t == "dessert")); // Should only appear once
+        Assert.Single(updatedRecipe.Tags, t => t == "dessert"); // Should only appear once
     }
 
     [Fact]
