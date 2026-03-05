@@ -1,0 +1,49 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main, '001-upgrade-dotnet10-csharp12']
+    paths:
+      - 'src/backend/**'
+      - 'src/backend/global.json'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/backend/**'
+      - 'src/backend/global.json'
+      - '.github/workflows/backend-ci.yml'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK (pinned to global.json)
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.103'
+
+      - name: Verify SDK version matches global.json
+        shell: pwsh
+        run: |
+          $globalJson = Get-Content ./src/backend/global.json -Raw | ConvertFrom-Json
+          $expected = $globalJson.sdk.version
+          $actual = & dotnet --version
+          if ($actual -ne $expected) {
+            Write-Error "SDK mismatch: expected '$expected', got '$actual'"
+            exit 1
+          }
+          Write-Host "SDK version verified: $actual"
+
+      - name: Restore
+        run: dotnet restore src/backend/RecipeCollection.sln
+
+      - name: Build
+        run: dotnet build src/backend/RecipeCollection.sln --no-restore
+
+      - name: Test
+        run: dotnet test src/backend/RecipeCollection.sln --no-build --verbosity normal

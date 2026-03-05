@@ -40,11 +40,15 @@ Cosmos DB is the system-of-record database and is accessed only by the API.
 - Must handle client-side routing without server rewrites being required by app logic (if routing is needed, it must be compatible with static hosting).
 
 ### Backend API (Azure App Service)
+- Must target `net10.0` for all backend application and test projects (full cutover; no dual-targeting with older frameworks).
+- Must compile with C# 12 language baseline.
+- Must pin SDK selection via `global.json` to a specific `.NET 10.0.x` version, and CI must use the same pinned SDK.
 - Must expose a health endpoint (e.g., `GET /health`) returning 200 when dependencies are healthy.
 - Must return consistent JSON error shapes (at minimum: `message` and `code`).
 - Must validate inputs and return appropriate 4xx responses; never rely on Cosmos errors for validation.
 - Must support configuration via environment variables/App Service app settings.
 - Must log structured events (JSON) and include a request correlation ID in logs.
+- Dependency incompatibilities with the required platform baseline are release blockers.
 
 ### Cosmos DB
 - Must be accessed only by the backend API (never directly from the browser).
@@ -77,4 +81,4 @@ This constitution supersedes local conventions when there is a conflict.
 - Breaking changes to public API contracts require a migration plan.
 - Reviews must explicitly check: security baseline, test-first compliance, and “no secrets in frontend/repo”.
 
-**Version**: 1.0.0 | **Ratified**: 2026-02-10 | **Last Amended**: 2026-02-10
+**Version**: 1.1.0 | **Ratified**: 2026-02-10 | **Last Amended**: 2026-03-05

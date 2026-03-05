@@ -20,7 +20,7 @@ A **partial MVP implementation** of the Recipe Collection app has been completed
 - [x] Quickstart guide ([specs/001-recipe-collection/quickstart.md](specs/001-recipe-collection/quickstart.md))
 
 ### Phase 1: Project Scaffolding
-- [x] Backend: .NET 9 Minimal API solution ([src/backend/](src/backend/))
+- [x] Backend: .NET 10 (C# 12) Minimal API solution ([src/backend/](src/backend/))
   - Solution structure: `RecipeApi` project + `RecipeApi.Tests` xUnit project
   - NuGet packages: Cosmos DB, Azure Blob Storage, Azure Vision ImageAnalysis, FluentValidation
 - [x] Frontend: Vite + React + TypeScript + Tailwind CSS ([src/frontend/](src/frontend/))
