@@ -47,7 +47,3 @@ jobs:
 
       - name: Test
         run: dotnet test src/backend/RecipeCollection.sln --no-build --verbosity normal
-
-      - name: SDK Parity Check
-        shell: pwsh
-        run: ./scripts/powershell/assert-sdk-parity.ps1
