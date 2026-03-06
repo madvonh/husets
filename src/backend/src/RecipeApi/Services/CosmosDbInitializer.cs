@@ -23,14 +23,16 @@ public class CosmosDbInitializer : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        var databaseName = _configuration["CosmosDb:DatabaseName"]
-            ?? throw new InvalidOperationException("CosmosDb:DatabaseName not configured");
-        var containerName = _configuration["CosmosDb:ContainerName"]
-            ?? throw new InvalidOperationException("CosmosDb:ContainerName not configured");
+        string? databaseName = null;
+        string? containerName = null;
         const string partitionKeyPath = "/pk";
 
         try
         {
+            databaseName = _configuration["CosmosDb:DatabaseName"]
+                ?? throw new InvalidOperationException("CosmosDb:DatabaseName not configured");
+            containerName = _configuration["CosmosDb:ContainerName"]
+                ?? throw new InvalidOperationException("CosmosDb:ContainerName not configured");
             _logger.LogInformation(
                 "Initializing Cosmos DB: database '{DatabaseName}', container '{ContainerName}'",
                 databaseName, containerName);

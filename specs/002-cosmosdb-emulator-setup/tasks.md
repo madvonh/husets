@@ -6,7 +6,7 @@
 
 ## Phase 1: Configuration (Setup)
 
-- [x] T01: Add emulator connection string and CosmosDb section to `appsettings.Development.json` [FR-001, FR-003]
+- [x] T01: Add CosmosDb section to `appsettings.Development.json` and emulator connection string to `launchSettings.json` [FR-001, FR-003]
 - [x] T02: Add CosmosDb placeholder section to `appsettings.json` for production [FR-002, FR-003]
 
 ## Phase 2: Core Services

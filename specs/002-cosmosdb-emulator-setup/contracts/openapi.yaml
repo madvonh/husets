@@ -6,10 +6,14 @@ info:
     Contract note for feature 002-cosmosdb-emulator-setup.
     This feature introduces no new API endpoints and no request/response schema changes.
     It tightens the runtime behavior of the existing health endpoint for Cosmos DB connectivity.
+    For local development, the API is expected to run on https://localhost:7137 (HTTPS)
+    and http://localhost:5137 (HTTP), matching launchSettings and the quickstart docs.
 
 servers:
-  - url: https://localhost:5001
-    description: Local development
+  - url: https://localhost:7137
+    description: Local development (HTTPS)
+  - url: http://localhost:5137
+    description: Local development (HTTP)
   - url: https://api.husets.example.com
     description: Production placeholder
 

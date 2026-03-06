@@ -29,7 +29,7 @@ public class CosmosDbHealthCheck : IHealthCheck
             var connectionString = _configuration["CosmosDb:ConnectionString"];
             if (string.IsNullOrEmpty(connectionString))
             {
-                return HealthCheckResult.Unhealthy("CosmosDb connection string not configured");
+                return HealthCheckResult.Degraded("CosmosDb connection string not configured; using in-memory fallback");
             }
 
             if (_initializer is { IsInitialized: false })
