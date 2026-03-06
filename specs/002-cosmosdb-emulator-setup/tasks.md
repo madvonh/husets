@@ -21,7 +21,7 @@
 
 ## Phase 4: Validation
 
-- [x] T07: Run existing tests — all 67 pass without modification [FR-005, SC-005]
+- [x] T07: Run existing tests — all pass without modification [FR-005, SC-005]
 
 ## Phase 5: Documentation
 
