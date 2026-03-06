@@ -8,15 +8,30 @@ using Microsoft.OpenApi;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add CORS
-var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+var allowedOriginsSection = builder.Configuration.GetSection("AllowedOrigins");
+var allowedOrigins = allowedOriginsSection.Get<string[]>()
+    ?? builder.Configuration["AllowedOrigins"]?
+        .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+    ?? Array.Empty<string>();
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins(allowedOrigins)
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .WithExposedHeaders("X-Correlation-Id");
+        if (allowedOrigins.Length == 0 || allowedOrigins.Contains("*"))
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .WithExposedHeaders("X-Correlation-Id");
+        }
+        else
+        {
+            policy.WithOrigins(allowedOrigins)
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .WithExposedHeaders("X-Correlation-Id");
+        }
     });
 });
 
@@ -39,11 +54,35 @@ builder.Services.AddSwaggerGen(options =>
 var cosmosConnectionString = builder.Configuration["CosmosDb:ConnectionString"];
 if (!string.IsNullOrEmpty(cosmosConnectionString))
 {
+    var isLocalEmulator = cosmosConnectionString.Contains("localhost", StringComparison.OrdinalIgnoreCase)
+                       || cosmosConnectionString.Contains("127.0.0.1", StringComparison.Ordinal);
+
     builder.Services.AddSingleton(_ =>
     {
-        return new CosmosClient(cosmosConnectionString);
+        var options = new CosmosClientOptions();
+
+        if (isLocalEmulator)
+        {
+            // Bypass SSL validation for the Cosmos DB Emulator's self-signed certificate (FR-011)
+            options.ConnectionMode = ConnectionMode.Gateway;
+            options.HttpClientFactory = () =>
+            {
+                var handler = new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback =
+                        HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                };
+                return new HttpClient(handler);
+            };
+        }
+
+        return new CosmosClient(cosmosConnectionString, options);
     });
     builder.Services.AddSingleton<ICosmosDbService, CosmosDbService>();
+
+    // Auto-create database and container on startup (FR-004)
+    builder.Services.AddSingleton<CosmosDbInitializer>();
+    builder.Services.AddHostedService(sp => sp.GetRequiredService<CosmosDbInitializer>());
 }
 else
 {

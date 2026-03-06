@@ -5,13 +5,21 @@ namespace RecipeApi.Services;
 
 public class CosmosDbHealthCheck : IHealthCheck
 {
+    private readonly CosmosClient? _cosmosClient;
+    private readonly CosmosDbInitializer? _initializer;
     private readonly IConfiguration _configuration;
     private readonly ILogger<CosmosDbHealthCheck> _logger;
 
-    public CosmosDbHealthCheck(IConfiguration configuration, ILogger<CosmosDbHealthCheck> logger)
+    public CosmosDbHealthCheck(
+        IConfiguration configuration,
+        ILogger<CosmosDbHealthCheck> logger,
+        CosmosClient? cosmosClient = null,
+        CosmosDbInitializer? initializer = null)
     {
         _configuration = configuration;
         _logger = logger;
+        _cosmosClient = cosmosClient;
+        _initializer = initializer;
     }
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
@@ -24,11 +32,21 @@ public class CosmosDbHealthCheck : IHealthCheck
                 return HealthCheckResult.Unhealthy("CosmosDb connection string not configured");
             }
 
-            var cosmosClient = new CosmosClient(connectionString);
-            var databaseName = _configuration["CosmosDb:DatabaseName"];
-            var database = cosmosClient.GetDatabase(databaseName);
+            if (_initializer is { IsInitialized: false })
+            {
+                return HealthCheckResult.Unhealthy(
+                    "Cosmos DB initialization failed",
+                    _initializer.InitializationException);
+            }
 
-            // Simple read to verify connectivity
+            if (_cosmosClient is null)
+            {
+                return HealthCheckResult.Unhealthy("CosmosDb client not available");
+            }
+
+            var databaseName = _configuration["CosmosDb:DatabaseName"];
+            var database = _cosmosClient.GetDatabase(databaseName);
+
             await database.ReadAsync(cancellationToken: cancellationToken);
 
             return HealthCheckResult.Healthy("CosmosDb is connected");
