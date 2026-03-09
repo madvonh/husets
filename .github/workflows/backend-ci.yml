@@ -2,7 +2,7 @@ name: Backend CI
 
 on:
   push:
-    branches: [master, '001-upgrade-dotnet10-csharp12']
+    branches: [master]
     paths:
       - 'src/backend/**'
       - 'src/backend/global.json'
