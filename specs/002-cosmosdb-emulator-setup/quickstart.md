@@ -13,7 +13,7 @@ This guide explains how to run the backend API locally against the Windows Cosmo
 - Git
 
 Optional:
-- Node.js 18+ if running the frontend
+- Node.js 22 LTS if running the frontend
 
 ## Step 1: Install and Start the Cosmos DB Emulator
 

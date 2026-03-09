@@ -1,0 +1,54 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [main, '003-upgrade-react-vite']
+    paths:
+      - 'src/frontend/**'
+      - '.github/workflows/frontend-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/frontend/**'
+      - '.github/workflows/frontend-ci.yml'
+
+jobs:
+  lint-typecheck-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22 LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: 'src/frontend/package-lock.json'
+
+      - name: Verify Node version matches engines requirement
+        shell: bash
+        run: |
+          MAJOR=$(node -e "console.log(process.version.split('.')[0].slice(1))")
+          if [ "$MAJOR" -lt 22 ]; then
+            echo "Node version must be >= 22, got $(node --version)"
+            exit 1
+          fi
+          echo "Node version verified: $(node --version)"
+
+      - name: Install dependencies
+        working-directory: src/frontend
+        run: npm ci
+
+      - name: Lint
+        working-directory: src/frontend
+        run: npm run lint
+
+      - name: Type-check
+        working-directory: src/frontend
+        run: npm run type-check
+
+      - name: Build
+        working-directory: src/frontend
+        run: npm run build

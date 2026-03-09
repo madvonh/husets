@@ -10,7 +10,7 @@ This guide covers running the Recipe Collection app locally for development.
 ### Tools
 
 - **.NET SDK** 10.0 or higher (pinned via `global.json` at repository root)
-- **Node.js** 18+ and **npm** 9+
+- **Node.js** 22 LTS and **npm** (bundled with Node 22)
 - **Docker Desktop** (for Cosmos DB emulator)
 - **Azure CLI** (optional, for Blob Storage emulator or real Azure resources)
 - **Git** (to clone the repo)
