@@ -11,60 +11,89 @@ public class DocumentationBaselineTests
 
     // --- T027: README platform/version and backend path guidance ---
 
-    [Fact]
+    [Test]
     public void Readme_References_DotNet10()
     {
         var content = FileAssertionHelpers.ReadTextFile(ReadmeMd);
         // Should mention .NET 10 somewhere (SDK, runtime, or platform reference)
-        Assert.Matches(@"\.NET\s+10", content);
+        Assert.That(content, Does.Match(@"\.NET\s+10"));
     }
 
-    [Fact]
+    [Test]
     public void Readme_References_CSharp12()
     {
         var content = FileAssertionHelpers.ReadTextFile(ReadmeMd);
-        Assert.Matches(@"C#\s*12", content);
+        Assert.That(content, Does.Match(@"C#\s*12"));
     }
 
-    [Fact]
+    [Test]
     public void Readme_BackendPaths_AreCorrect()
     {
         var content = FileAssertionHelpers.ReadTextFile(ReadmeMd);
         // Should reference src/backend paths
-        Assert.Contains("src/backend", content);
+        Assert.That(content, Does.Contain("src/backend"));
     }
 
-    [Fact]
+    [Test]
     public void Readme_DoesNotReference_DotNet9()
     {
         var content = FileAssertionHelpers.ReadTextFile(ReadmeMd);
-        Assert.DoesNotMatch(@"\.NET\s+9\b", content);
+        Assert.That(content, Does.Not.Match(@"\.NET\s+9\b"));
     }
 
     // --- T028: Quickstart baseline guidance and command consistency ---
 
-    [Fact]
+    [Test]
     public void RecipeQuickstart_References_DotNet10Sdk()
     {
         var content = FileAssertionHelpers.ReadTextFile(RecipeQuickstart);
         // Should reference .NET 10 SDK requirement (may have markdown bold markers)
-        Assert.Matches(@"\.NET[\s*]+(SDK[\s*]+)?10", content);
+        Assert.That(content, Does.Match(@"\.NET[\s*]+(SDK[\s*]+)?10"));
     }
 
-    [Fact]
+    [Test]
     public void RecipeQuickstart_BackendCommands_UseCorrectPaths()
     {
         var content = FileAssertionHelpers.ReadTextFile(RecipeQuickstart);
         // Commands like "cd backend/" should be "cd src/backend/"
         // Should NOT reference bare "cd backend/" without "src/" prefix
-        Assert.DoesNotMatch(@"cd\s+backend/", content);
+        Assert.That(content, Does.Not.Match(@"cd\s+backend/"));
     }
 
-    [Fact]
+    [Test]
     public void RecipeQuickstart_FrontendCommands_UseCorrectPaths()
     {
         var content = FileAssertionHelpers.ReadTextFile(RecipeQuickstart);
         // Frontend commands should use src/frontend paths
-        Assert.DoesNotMatch(@"cd\s+frontend\b(?!/)", content);
+        Assert.That(content, Does.Not.Match(@"cd\s+frontend\b(?!/)"));
+    }
+
+    [Test]
+    public void Readme_BackendTestingGuidance_ReferencesApprovedStack()
+    {
+        var content = FileAssertionHelpers.ReadTextFile(ReadmeMd);
+
+        Assert.That(content, Does.Contain("NUnit"));
+        Assert.That(content, Does.Contain("NSubstitute"));
+        Assert.That(content, Does.Contain("Microsoft.NET.Test.Sdk"));
+    }
+
+    [Test]
+    public void Readme_BackendTestingGuidance_DoesNotReferenceXunit()
+    {
+        var content = FileAssertionHelpers.ReadTextFile(ReadmeMd);
+
+        Assert.That(content, Does.Not.Contain("xUnit"));
+        Assert.That(content, Does.Not.Contain("Xunit"));
+    }
+
+    [Test]
+    public void RecipeQuickstart_BackendTestingGuidance_ReferencesApprovedStack()
+    {
+        var content = FileAssertionHelpers.ReadTextFile(RecipeQuickstart);
+
+        Assert.That(content, Does.Contain("NUnit"));
+        Assert.That(content, Does.Contain("NSubstitute"));
+        Assert.That(content, Does.Contain("Microsoft.NET.Test.Sdk"));
     }
 }

@@ -1,5 +1,4 @@
 using RecipeApi.Utilities;
-using Xunit;
 
 namespace RecipeApi.Tests;
 
@@ -9,37 +8,35 @@ namespace RecipeApi.Tests;
 /// </summary>
 public class SearchNormalizationTests
 {
-    [Theory]
-    [InlineData("dessert", "dessert")]
-    [InlineData("Dessert", "dessert")]
-    [InlineData("DESSERT", "dessert")]
-    [InlineData("  dessert  ", "dessert")]
-    [InlineData("  Dessert  ", "dessert")]
-    [InlineData("gluten-free", "gluten-free")]
-    [InlineData("Gluten-Free", "gluten-free")]
+    [TestCase("dessert", "dessert")]
+    [TestCase("Dessert", "dessert")]
+    [TestCase("DESSERT", "dessert")]
+    [TestCase("  dessert  ", "dessert")]
+    [TestCase("  Dessert  ", "dessert")]
+    [TestCase("gluten-free", "gluten-free")]
+    [TestCase("Gluten-Free", "gluten-free")]
     public void NormalizeTag_HandlesVariousInputs(string input, string expected)
     {
         // Act
         var result = TagNormalizer.Normalize(input);
 
         // Assert
-        Assert.Equal(expected, result);
+        Assert.That(result, Is.EqualTo(expected));
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData("   ")]
-    [InlineData(null)]
+    [TestCase("")]
+    [TestCase("   ")]
+    [TestCase(null)]
     public void NormalizeTag_HandlesEmptyInput(string? input)
     {
         // Act
         var result = TagNormalizer.Normalize(input ?? "");
 
         // Assert
-        Assert.Equal(string.Empty, result);
+        Assert.That(result, Is.EqualTo(string.Empty));
     }
 
-    [Fact]
+    [Test]
     public void NormalizeTagList_RemovesDuplicates()
     {
         // Arrange
@@ -49,12 +46,12 @@ public class SearchNormalizationTests
         var result = TagNormalizer.Normalize(tags);
 
         // Assert
-        Assert.Equal(2, result.Count); // Should only have 'dessert' and 'chocolate'
-        Assert.Contains("dessert", result);
-        Assert.Contains("chocolate", result);
+        Assert.That(result, Has.Count.EqualTo(2)); // Should only have 'dessert' and 'chocolate'
+        Assert.That(result, Contains.Item("dessert"));
+        Assert.That(result, Contains.Item("chocolate"));
     }
 
-    [Fact]
+    [Test]
     public void NormalizeTagList_TrimsAndLowercasesAll()
     {
         // Arrange
@@ -64,11 +61,14 @@ public class SearchNormalizationTests
         var result = TagNormalizer.Normalize(tags);
 
         // Assert
-        Assert.All(result, tag => Assert.Equal(tag, tag.ToLowerInvariant().Trim()));
-        Assert.Equal(3, result.Count);
+        Assert.That(result, Has.Count.EqualTo(3));
+        foreach (var tag in result)
+        {
+            Assert.That(tag, Is.EqualTo(tag.ToLowerInvariant().Trim()));
+        }
     }
 
-    [Fact]
+    [Test]
     public void NormalizeTagList_HandlesEmptyList()
     {
         // Arrange
@@ -78,23 +78,22 @@ public class SearchNormalizationTests
         var result = TagNormalizer.Normalize(tags);
 
         // Assert
-        Assert.Empty(result);
+        Assert.That(result, Is.Empty);
     }
 
-    [Theory]
-    [InlineData("chocolate cake", "chocolate cake")]
-    [InlineData("  chocolate cake  ", "chocolate cake")]
-    [InlineData("  Chocolate   Cake  ", "chocolate   cake")] // Preserves internal spacing
+    [TestCase("chocolate cake", "chocolate cake")]
+    [TestCase("  chocolate cake  ", "chocolate cake")]
+    [TestCase("  Chocolate   Cake  ", "chocolate   cake")] // Preserves internal spacing
     public void NormalizeQuery_TrimsAndLowercases(string input, string expected)
     {
         // Act
         var result = SearchQueryNormalizer.Normalize(input);
 
         // Assert
-        Assert.Equal(expected, result);
+        Assert.That(result, Is.EqualTo(expected));
     }
 
-    [Fact]
+    [Test]
     public void BuildSearchText_CombinesFieldsWithSpaces()
     {
         // Arrange
@@ -106,13 +105,13 @@ public class SearchNormalizationTests
         var searchText = SearchTextBuilder.Build(title, rawText, tags);
 
         // Assert
-        Assert.Contains("chocolate chip cookies", searchText.ToLower());
-        Assert.Contains("flour", searchText.ToLower());
-        Assert.Contains("dessert", searchText.ToLower());
-        Assert.Contains("cookies", searchText.ToLower());
+        Assert.That(searchText.ToLower(), Does.Contain("chocolate chip cookies"));
+        Assert.That(searchText.ToLower(), Does.Contain("flour"));
+        Assert.That(searchText.ToLower(), Does.Contain("dessert"));
+        Assert.That(searchText.ToLower(), Does.Contain("cookies"));
     }
 
-    [Fact]
+    [Test]
     public void BuildSearchText_HandlesEmptyFields()
     {
         // Arrange
@@ -124,8 +123,8 @@ public class SearchNormalizationTests
         var searchText = SearchTextBuilder.Build(title, rawText, tags);
 
         // Assert
-        Assert.Contains("test recipe", searchText.ToLower());
-        Assert.DoesNotContain("null", searchText.ToLower());
+        Assert.That(searchText.ToLower(), Does.Contain("test recipe"));
+        Assert.That(searchText.ToLower(), Does.Not.Contain("null"));
     }
 }
 

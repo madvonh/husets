@@ -160,7 +160,7 @@ cd src/backend/src/RecipeApi
 # Restore dependencies
 dotnet restore
 
-# Run tests (after implementation)
+# Run tests (after implementation) using NUnit + NSubstitute + Microsoft.NET.Test.Sdk
 cd ../../tests/RecipeApi.Tests
 dotnet test
 
@@ -334,7 +334,7 @@ Or let the backend auto-create on first upload (add logic in BlobService).
 ```powershell
 # Backend
 dotnet build                  # Build
-dotnet test                   # Run tests
+dotnet test                   # Run NUnit tests
 dotnet run                    # Run API
 
 # Frontend

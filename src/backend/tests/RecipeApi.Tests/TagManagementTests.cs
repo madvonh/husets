@@ -3,20 +3,30 @@ using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using RecipeApi.Models;
 using RecipeApi.Models.DTOs;
-using Xunit;
 
 namespace RecipeApi.Tests;
 
-public class TagManagementTests : IClassFixture<WebApplicationFactory<Program>>
+[TestFixture]
+public class TagManagementTests
 {
-    private readonly HttpClient _client;
+    private WebApplicationFactory<Program> _factory = null!;
+    private HttpClient _client = null!;
 
-    public TagManagementTests(WebApplicationFactory<Program> factory)
+    [OneTimeSetUp]
+    public void SetUp()
     {
-        _client = factory.CreateClient();
+        _factory = new WebApplicationFactory<Program>();
+        _client = _factory.CreateClient();
     }
 
-    [Fact]
+    [OneTimeTearDown]
+    public void TearDown()
+    {
+        _client.Dispose();
+        _factory.Dispose();
+    }
+
+    [Test]
     public async Task AddTag_ToExistingRecipe_ReturnsOk()
     {
         // Arrange - create a recipe first
@@ -27,13 +37,13 @@ public class TagManagementTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await _client.PostAsJsonAsync($"/recipes/{recipe.Id}/tags", tagRequest);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         var updatedRecipe = await response.Content.ReadFromJsonAsync<RecipeDetailResponse>();
-        Assert.NotNull(updatedRecipe);
-        Assert.Contains("dessert", updatedRecipe.Tags);
+        Assert.That(updatedRecipe, Is.Not.Null);
+        Assert.That(updatedRecipe!.Tags, Contains.Item("dessert"));
     }
 
-    [Fact]
+    [Test]
     public async Task AddTag_NormalizesTagName()
     {
         // Arrange
@@ -44,13 +54,13 @@ public class TagManagementTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await _client.PostAsJsonAsync($"/recipes/{recipe.Id}/tags", tagRequest);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         var updatedRecipe = await response.Content.ReadFromJsonAsync<RecipeDetailResponse>();
-        Assert.NotNull(updatedRecipe);
-        Assert.Contains("dessert", updatedRecipe.Tags); // Should be normalized to lowercase
+        Assert.That(updatedRecipe, Is.Not.Null);
+        Assert.That(updatedRecipe!.Tags, Contains.Item("dessert")); // Should be normalized to lowercase
     }
 
-    [Fact]
+    [Test]
     public async Task AddTag_DuplicateTag_IsIdempotent()
     {
         // Arrange
@@ -62,13 +72,13 @@ public class TagManagementTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await _client.PostAsJsonAsync($"/recipes/{recipe.Id}/tags", tagRequest);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         var updatedRecipe = await response.Content.ReadFromJsonAsync<RecipeDetailResponse>();
-        Assert.NotNull(updatedRecipe);
-        Assert.Single(updatedRecipe.Tags, t => t == "dessert"); // Should only appear once
+        Assert.That(updatedRecipe, Is.Not.Null);
+        Assert.That(updatedRecipe!.Tags, Has.Exactly(1).EqualTo("dessert")); // Should only appear once
     }
 
-    [Fact]
+    [Test]
     public async Task AddTag_ToNonExistentRecipe_ReturnsNotFound()
     {
         // Arrange
@@ -79,10 +89,10 @@ public class TagManagementTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await _client.PostAsJsonAsync($"/recipes/{nonExistentId}/tags", tagRequest);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
     }
 
-    [Fact]
+    [Test]
     public async Task RemoveTag_FromRecipe_ReturnsOk()
     {
         // Arrange - create recipe with a tag
@@ -93,13 +103,13 @@ public class TagManagementTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await _client.DeleteAsync($"/recipes/{recipe.Id}/tags/dessert");
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         var updatedRecipe = await response.Content.ReadFromJsonAsync<RecipeDetailResponse>();
-        Assert.NotNull(updatedRecipe);
-        Assert.DoesNotContain("dessert", updatedRecipe.Tags);
+        Assert.That(updatedRecipe, Is.Not.Null);
+        Assert.That(updatedRecipe!.Tags, Has.No.Member("dessert"));
     }
 
-    [Fact]
+    [Test]
     public async Task RemoveTag_NormalizesTagName()
     {
         // Arrange
@@ -110,13 +120,13 @@ public class TagManagementTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await _client.DeleteAsync($"/recipes/{recipe.Id}/tags/  DESSERT  ");
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         var updatedRecipe = await response.Content.ReadFromJsonAsync<RecipeDetailResponse>();
-        Assert.NotNull(updatedRecipe);
-        Assert.DoesNotContain("dessert", updatedRecipe.Tags);
+        Assert.That(updatedRecipe, Is.Not.Null);
+        Assert.That(updatedRecipe!.Tags, Has.No.Member("dessert"));
     }
 
-    [Fact]
+    [Test]
     public async Task RemoveTag_NonExistentTag_IsIdempotent()
     {
         // Arrange
@@ -126,10 +136,10 @@ public class TagManagementTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await _client.DeleteAsync($"/recipes/{recipe.Id}/tags/nonexistent");
 
         // Assert - should succeed (idempotent)
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
     }
 
-    [Fact]
+    [Test]
     public async Task RemoveTag_FromNonExistentRecipe_ReturnsNotFound()
     {
         // Arrange
@@ -139,10 +149,10 @@ public class TagManagementTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await _client.DeleteAsync($"/recipes/{nonExistentId}/tags/dessert");
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
     }
 
-    [Fact]
+    [Test]
     public async Task TagChanges_ReflectInSearch()
     {
         // Arrange - create recipe and add tag
@@ -153,13 +163,13 @@ public class TagManagementTests : IClassFixture<WebApplicationFactory<Program>>
         var searchResponse = await _client.GetAsync("/recipes?tag=chocolate");
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, searchResponse.StatusCode);
+        Assert.That(searchResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         var results = await searchResponse.Content.ReadFromJsonAsync<List<RecipeSummaryResponse>>();
-        Assert.NotNull(results);
-        Assert.Contains(results, r => r.Id == recipe.Id);
+        Assert.That(results, Is.Not.Null);
+        Assert.That(results!, Has.Some.Matches<RecipeSummaryResponse>(r => r.Id == recipe.Id));
     }
 
-    [Fact]
+    [Test]
     public async Task RemovedTag_NoLongerAppearsInSearch()
     {
         // Arrange - create recipe, add tag, then remove it
@@ -171,10 +181,10 @@ public class TagManagementTests : IClassFixture<WebApplicationFactory<Program>>
         var searchResponse = await _client.GetAsync("/recipes?tag=chocolate");
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, searchResponse.StatusCode);
+        Assert.That(searchResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         var results = await searchResponse.Content.ReadFromJsonAsync<List<RecipeSummaryResponse>>();
-        Assert.NotNull(results);
-        Assert.DoesNotContain(results, r => r.Id == recipe.Id);
+        Assert.That(results, Is.Not.Null);
+        Assert.That(results!, Has.None.Matches<RecipeSummaryResponse>(r => r.Id == recipe.Id));
     }
 
     private async Task<RecipeDetailResponse> CreateTestRecipe()
