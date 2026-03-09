@@ -2,12 +2,12 @@ name: Frontend CI
 
 on:
   push:
-    branches: [main, '003-upgrade-react-vite']
+    branches: [master, '001-upgrade-react-vite']
     paths:
       - 'src/frontend/**'
       - '.github/workflows/frontend-ci.yml'
   pull_request:
-    branches: [main]
+    branches: [master]
     paths:
       - 'src/frontend/**'
       - '.github/workflows/frontend-ci.yml'
