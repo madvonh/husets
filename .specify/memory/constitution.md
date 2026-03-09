@@ -38,6 +38,9 @@ Cosmos DB is the system-of-record database and is accessed only by the API.
 - Must have a single configurable API base URL (per environment).
 - Must not embed secrets, connection strings, keys, or tokens in the bundle.
 - Must handle client-side routing without server rewrites being required by app logic (if routing is needed, it must be compatible with static hosting).
+- Frontend code quality must use ESLint flat config on ESLint 9 or newer.
+- Frontend development must use the Vite dev server with HMR.
+- Frontend TypeScript must target version 5.9 or newer and configure `tsBuildInfoFile` for stable incremental builds.
 
 ### Backend API (Azure App Service)
 - Must target `net10.0` for all backend application and test projects (full cutover; no dual-targeting with older frameworks).
@@ -81,4 +84,4 @@ This constitution supersedes local conventions when there is a conflict.
 - Breaking changes to public API contracts require a migration plan.
 - Reviews must explicitly check: security baseline, test-first compliance, and “no secrets in frontend/repo”.
 
-**Version**: 1.1.0 | **Ratified**: 2026-02-10 | **Last Amended**: 2026-03-05
+**Version**: 1.2.0 | **Ratified**: 2026-02-10 | **Last Amended**: 2026-03-09

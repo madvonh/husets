@@ -23,10 +23,12 @@ A **partial MVP implementation** of the Recipe Collection app has been completed
 - [x] Backend: .NET 10 (C# 12) Minimal API solution ([src/backend/](src/backend/))
   - Solution structure: `RecipeApi` project + `RecipeApi.Tests` xUnit project
   - NuGet packages: Cosmos DB, Azure Blob Storage, Azure Vision ImageAnalysis, FluentValidation
-- [x] Frontend: Vite + React + TypeScript + Tailwind CSS ([src/frontend/](src/frontend/))
+- [x] Frontend: Vite 7 + React 19 + TypeScript 5.9 + Tailwind CSS 3 ([src/frontend/](src/frontend/))
+  - Requires **Node.js 22 LTS** (enforced via `engines` in `package.json`)
+  - ESLint 9 flat config (`eslint.config.mjs`)
   - Builds successfully
   - Responsive baseline (mobile-ready)
-  - Placeholder pages: Home, Add Recipe, Recipe Detail
+  - Pages: Home (search), Add Recipe (OCR), Recipe Detail (tags)
 
 ### Phase 2: Foundational Backend Infrastructure
 - [x] **Middleware**:
@@ -173,13 +175,15 @@ See [specs/001-recipe-collection/quickstart.md](specs/001-recipe-collection/quic
 
 **Quick Start (assumes Cosmos emulator + Azurite + Azure Vision configured)**:
 
+**Prerequisites**: .NET SDK 10.0+, **Node.js 22 LTS**, npm (bundled with Node 22), Docker Desktop
+
 ```powershell
 # Backend
 cd src/backend
 dotnet run --project src/RecipeApi
 # Listens on http://localhost:5137 (or https://localhost:7137 with the https launch profile)
 
-# Frontend
+# Frontend (requires Node 22+)
 cd src/frontend
 npm install
 npm run dev

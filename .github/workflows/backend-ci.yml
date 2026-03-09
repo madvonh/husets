@@ -2,13 +2,13 @@ name: Backend CI
 
 on:
   push:
-    branches: [main, '001-upgrade-dotnet10-csharp12']
+    branches: [master]
     paths:
       - 'src/backend/**'
       - 'src/backend/global.json'
       - '.github/workflows/backend-ci.yml'
   pull_request:
-    branches: [main]
+    branches: [master]
     paths:
       - 'src/backend/**'
       - 'src/backend/global.json'

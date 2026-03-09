@@ -162,7 +162,7 @@ export default function Home() {
                 {recipes.map((recipe) => (
                   <div
                     key={recipe.id}
-                    onClick={() => navigate(`/recipe/${recipe.id}`)}
+                    onClick={() => navigate(`/recipes/${recipe.id}`)}
                     className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer overflow-hidden"
                   >
                     <div className="p-6">

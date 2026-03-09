@@ -12,7 +12,9 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
+    "incremental": true,
     "jsx": "react-jsx",
+    "tsBuildInfoFile": "./node_modules/.cache/tsbuildinfo/tsconfig.tsbuildinfo",
 
     /* Linting */
     "strict": true,
