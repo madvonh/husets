@@ -30,7 +30,7 @@ public static class FileAssertionHelpers
     public static string? GetCsprojProperty(string csprojRelativePath, string propertyName)
     {
         var fullPath = Path.Combine(GetRepoRoot(), csprojRelativePath);
-        Assert.True(File.Exists(fullPath), $"Project file not found: {fullPath}");
+        Assert.That(File.Exists(fullPath), Is.True, $"Project file not found: {fullPath}");
 
         var doc = XDocument.Load(fullPath);
         return doc.Descendants(propertyName).FirstOrDefault()?.Value;
@@ -42,7 +42,7 @@ public static class FileAssertionHelpers
     public static IReadOnlyList<(string Include, string? Version)> GetPackageReferences(string csprojRelativePath)
     {
         var fullPath = Path.Combine(GetRepoRoot(), csprojRelativePath);
-        Assert.True(File.Exists(fullPath), $"Project file not found: {fullPath}");
+        Assert.That(File.Exists(fullPath), Is.True, $"Project file not found: {fullPath}");
 
         var doc = XDocument.Load(fullPath);
         return doc.Descendants("PackageReference")
@@ -58,7 +58,7 @@ public static class FileAssertionHelpers
     public static string? GetGlobalJsonSdkVersion()
     {
         var fullPath = Path.Combine(GetRepoRoot(), "src", "backend", "global.json");
-        Assert.True(File.Exists(fullPath), $"global.json not found: {fullPath}");
+        Assert.That(File.Exists(fullPath), Is.True, $"global.json not found: {fullPath}");
 
         var json = System.Text.Json.JsonDocument.Parse(File.ReadAllText(fullPath));
         return json.RootElement.GetProperty("sdk").GetProperty("version").GetString();
@@ -70,7 +70,7 @@ public static class FileAssertionHelpers
     public static System.Text.Json.JsonDocument ReadJsonFile(string relPath)
     {
         var fullPath = Path.Combine(GetRepoRoot(), relPath);
-        Assert.True(File.Exists(fullPath), $"File not found: {fullPath}");
+        Assert.That(File.Exists(fullPath), Is.True, $"File not found: {fullPath}");
         return System.Text.Json.JsonDocument.Parse(File.ReadAllText(fullPath));
     }
 
@@ -80,7 +80,7 @@ public static class FileAssertionHelpers
     public static string ReadTextFile(string relPath)
     {
         var fullPath = Path.Combine(GetRepoRoot(), relPath);
-        Assert.True(File.Exists(fullPath), $"File not found: {fullPath}");
+        Assert.That(File.Exists(fullPath), Is.True, $"File not found: {fullPath}");
         return File.ReadAllText(fullPath);
     }
 

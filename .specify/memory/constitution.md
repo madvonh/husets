@@ -20,6 +20,11 @@ For any behavior change (frontend or backend):
 3) Implement the smallest change to make tests pass.
 4) Refactor with tests staying green.
 
+For backend .NET test projects:
+- The approved test stack is `NUnit`, `NSubstitute`, and `Microsoft.NET.Test.Sdk`.
+- Collaborator replacements in new or migrated tests must use `NSubstitute`.
+- Non-mocking helpers such as builders, fixtures, and test data factories may be used when they are not acting as substitute-library replacements.
+
 ### IV. Cloud-Ready Data Access
 Cosmos DB is the system-of-record database and is accessed only by the API.
 - Use a clear partitioning strategy (partition key required for any new container/collection).
@@ -46,6 +51,8 @@ Cosmos DB is the system-of-record database and is accessed only by the API.
 - Must target `net10.0` for all backend application and test projects (full cutover; no dual-targeting with older frameworks).
 - Must compile with C# 12 language baseline.
 - Must pin SDK selection via `global.json` to a specific `.NET 10.0.x` version, and CI must use the same pinned SDK.
+- Active and future backend .NET test projects must use `NUnit` as the primary test framework and `Microsoft.NET.Test.Sdk` for test execution.
+- Active and future backend .NET test projects must use `NSubstitute` for collaborator replacements when a substitute library is needed.
 - Must expose a health endpoint (e.g., `GET /health`) returning 200 when dependencies are healthy.
 - Must return consistent JSON error shapes (at minimum: `message` and `code`).
 - Must validate inputs and return appropriate 4xx responses; never rely on Cosmos errors for validation.
@@ -67,6 +74,7 @@ Cosmos DB is the system-of-record database and is accessed only by the API.
 
 ### Definition of Done (Minimum)
 - Tests exist for new/changed behavior and pass locally/CI.
+- Backend .NET test projects use the approved stack and do not introduce non-approved primary test frameworks.
 - API contract is updated when the API changes.
 - Lint/build succeeds for affected projects.
 - No secrets committed.
@@ -74,6 +82,7 @@ Cosmos DB is the system-of-record database and is accessed only by the API.
 ### CI/CD (Minimum)
 - Build frontend assets and publish artifacts.
 - Run backend tests and produce deployable artifact.
+- Use automated validation to reject non-approved primary test frameworks in active backend .NET test projects.
 - Deploy API to App Service and frontend to static hosting per environment.
 
 ## Governance
@@ -82,6 +91,6 @@ Cosmos DB is the system-of-record database and is accessed only by the API.
 This constitution supersedes local conventions when there is a conflict.
 - Changes to these rules require updating this file and bumping the version.
 - Breaking changes to public API contracts require a migration plan.
-- Reviews must explicitly check: security baseline, test-first compliance, and “no secrets in frontend/repo”.
+- Reviews must explicitly check: security baseline, test-first compliance, approved backend test stack compliance, and “no secrets in frontend/repo”.
 
-**Version**: 1.2.0 | **Ratified**: 2026-02-10 | **Last Amended**: 2026-03-09
+**Version**: 1.3.0 | **Ratified**: 2026-02-10 | **Last Amended**: 2026-03-09

@@ -5,20 +5,26 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
 using RecipeApi.Models;
 using RecipeApi.Models.DTOs;
 using RecipeApi.Services;
-using Xunit;
 
 namespace RecipeApi.Tests;
 
-public class ValidationTests : IClassFixture<WebApplicationFactory<Program>>
+[TestFixture]
+public class ValidationTests
 {
-    private readonly HttpClient _client;
+    private WebApplicationFactory<Program> _factory = null!;
+    private HttpClient _client = null!;
 
-    public ValidationTests(WebApplicationFactory<Program> factory)
+    [OneTimeSetUp]
+    public void SetUp()
     {
-        var configuredFactory = factory.WithWebHostBuilder(builder =>
+        var ocrService = Substitute.For<IOcrService>();
+        ocrService.ExtractTextFromImageAsync(Arg.Any<Stream>()).Returns(Task.FromResult("Test OCR text"));
+
+        _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
         {
             builder.UseEnvironment("Testing");
             builder.ConfigureTestServices(services =>
@@ -29,22 +35,21 @@ public class ValidationTests : IClassFixture<WebApplicationFactory<Program>>
                     services.Remove(ocrServiceDescriptor);
                 }
 
-                services.AddSingleton<IOcrService, FakeOcrService>();
+                services.AddSingleton(ocrService);
             });
         });
 
-        _client = configuredFactory.CreateClient();
+        _client = _factory.CreateClient();
     }
 
-    private sealed class FakeOcrService : IOcrService
+    [OneTimeTearDown]
+    public void TearDown()
     {
-        public Task<string> ExtractTextFromImageAsync(Stream imageStream)
-        {
-            return Task.FromResult("Test OCR text");
-        }
+        _client.Dispose();
+        _factory.Dispose();
     }
 
-    [Fact]
+    [Test]
     public async Task CreateRecipe_WithTooShortTitle_Returns400()
     {
         // Arrange
@@ -60,13 +65,13 @@ public class ValidationTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await _client.PostAsJsonAsync("/recipes", request);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-        Assert.NotNull(error);
-        Assert.Contains("Title must be at least 3 characters", error.Message);
+        Assert.That(error, Is.Not.Null);
+        Assert.That(error!.Message, Does.Contain("Title must be at least 3 characters"));
     }
 
-    [Fact]
+    [Test]
     public async Task CreateRecipe_WithTooLongTitle_Returns400()
     {
         // Arrange
@@ -82,13 +87,13 @@ public class ValidationTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await _client.PostAsJsonAsync("/recipes", request);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-        Assert.NotNull(error);
-        Assert.Contains("Title must not exceed 200 characters", error.Message);
+        Assert.That(error, Is.Not.Null);
+        Assert.That(error!.Message, Does.Contain("Title must not exceed 200 characters"));
     }
 
-    [Fact]
+    [Test]
     public async Task CreateRecipe_WithTooLongRawText_Returns400()
     {
         // Arrange
@@ -104,13 +109,13 @@ public class ValidationTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await _client.PostAsJsonAsync("/recipes", request);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-        Assert.NotNull(error);
-        Assert.Contains("Recipe text must not exceed 10,000 characters", error.Message);
+        Assert.That(error, Is.Not.Null);
+        Assert.That(error!.Message, Does.Contain("Recipe text must not exceed 10,000 characters"));
     }
 
-    [Fact]
+    [Test]
     public async Task CreateRecipe_WithTooManyTags_Returns400()
     {
         // Arrange
@@ -132,13 +137,13 @@ public class ValidationTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await _client.PostAsJsonAsync("/recipes", request);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-        Assert.NotNull(error);
-        Assert.Contains("Recipe cannot have more than 20 tags", error.Message);
+        Assert.That(error, Is.Not.Null);
+        Assert.That(error!.Message, Does.Contain("Recipe cannot have more than 20 tags"));
     }
 
-    [Fact]
+    [Test]
     public async Task CreateRecipe_WithTooShortTag_Returns400()
     {
         // Arrange
@@ -154,13 +159,13 @@ public class ValidationTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await _client.PostAsJsonAsync("/recipes", request);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-        Assert.NotNull(error);
-        Assert.Contains("Tag must be at least 2 characters", error.Message);
+        Assert.That(error, Is.Not.Null);
+        Assert.That(error!.Message, Does.Contain("Tag must be at least 2 characters"));
     }
 
-    [Fact]
+    [Test]
     public async Task CreateRecipe_WithTooLongTag_Returns400()
     {
         // Arrange
@@ -176,13 +181,13 @@ public class ValidationTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await _client.PostAsJsonAsync("/recipes", request);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-        Assert.NotNull(error);
-        Assert.Contains("Tag must not exceed 50 characters", error.Message);
+        Assert.That(error, Is.Not.Null);
+        Assert.That(error!.Message, Does.Contain("Tag must not exceed 50 characters"));
     }
 
-    [Fact]
+    [Test]
     public async Task CreateRecipe_WithInvalidTagCharacters_Returns400()
     {
         // Arrange
@@ -198,13 +203,13 @@ public class ValidationTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await _client.PostAsJsonAsync("/recipes", request);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-        Assert.NotNull(error);
-        Assert.Contains("Tag must contain only lowercase letters, numbers, and hyphens", error.Message);
+        Assert.That(error, Is.Not.Null);
+        Assert.That(error!.Message, Does.Contain("Tag must contain only lowercase letters, numbers, and hyphens"));
     }
 
-    [Fact]
+    [Test]
     public async Task AddTag_WithTooShortTag_Returns400()
     {
         // Arrange - First create a recipe
@@ -224,13 +229,13 @@ public class ValidationTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await _client.PostAsJsonAsync($"/recipes/{recipe!.Id}/tags", addTagRequest);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-        Assert.NotNull(error);
-        Assert.Contains("Tag must be at least 2 characters", error.Message);
+        Assert.That(error, Is.Not.Null);
+        Assert.That(error!.Message, Does.Contain("Tag must be at least 2 characters"));
     }
 
-    [Fact]
+    [Test]
     public async Task AddTag_WithTooLongTag_Returns400()
     {
         // Arrange - First create a recipe
@@ -250,13 +255,13 @@ public class ValidationTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await _client.PostAsJsonAsync($"/recipes/{recipe!.Id}/tags", addTagRequest);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-        Assert.NotNull(error);
-        Assert.Contains("Tag must not exceed 50 characters", error.Message);
+        Assert.That(error, Is.Not.Null);
+        Assert.That(error!.Message, Does.Contain("Tag must not exceed 50 characters"));
     }
 
-    [Fact]
+    [Test]
     public async Task OcrEndpoint_WithTooLargeFile_Returns400()
     {
         // Arrange
@@ -272,14 +277,14 @@ public class ValidationTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await _client.PostAsync("/ocr", content);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-        Assert.NotNull(error);
-        Assert.Equal("FILE_TOO_LARGE", error.Code);
-        Assert.Contains("exceeds maximum allowed size", error.Message);
+        Assert.That(error, Is.Not.Null);
+        Assert.That(error!.Code, Is.EqualTo("FILE_TOO_LARGE"));
+        Assert.That(error.Message, Does.Contain("exceeds maximum allowed size"));
     }
 
-    [Fact]
+    [Test]
     public async Task OcrEndpoint_WithInvalidFileType_Returns400()
     {
         // Arrange
@@ -292,14 +297,14 @@ public class ValidationTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await _client.PostAsync("/ocr", content);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-        Assert.NotNull(error);
-        Assert.Equal("INVALID_FILE_TYPE", error.Code);
-        Assert.Contains("Invalid image type", error.Message);
+        Assert.That(error, Is.Not.Null);
+        Assert.That(error!.Code, Is.EqualTo("INVALID_FILE_TYPE"));
+        Assert.That(error.Message, Does.Contain("Invalid image type"));
     }
 
-    [Fact]
+    [Test]
     public async Task OcrEndpoint_WithValidJpeg_Returns200()
     {
         // Arrange
@@ -313,6 +318,6 @@ public class ValidationTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await _client.PostAsync("/ocr", content);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
     }
 }

@@ -5,20 +5,27 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using RecipeApi.Models;
 using RecipeApi.Models.DTOs;
-using Xunit;
 
 namespace RecipeApi.Tests;
 
-public class FoundationalTests : IClassFixture<WebApplicationFactory<Program>>
+[TestFixture]
+public class FoundationalTests
 {
-    private readonly WebApplicationFactory<Program> _factory;
+    private WebApplicationFactory<Program> _factory = null!;
 
-    public FoundationalTests(WebApplicationFactory<Program> factory)
+    [OneTimeSetUp]
+    public void SetUp()
     {
-        _factory = factory;
+        _factory = new WebApplicationFactory<Program>();
     }
 
-    [Fact]
+    [OneTimeTearDown]
+    public void TearDown()
+    {
+        _factory.Dispose();
+    }
+
+    [Test]
     public async Task HealthEndpoint_ReturnsOk()
     {
         // Arrange
@@ -28,10 +35,10 @@ public class FoundationalTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await client.GetAsync("/health");
 
         // Assert (might be Unhealthy if Cosmos not configured, but should return 200 or 503)
-        Assert.True(response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.ServiceUnavailable);
+        Assert.That(response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.ServiceUnavailable, Is.True);
     }
 
-    [Fact]
+    [Test]
     public async Task RootEndpoint_ReturnsServiceInfo()
     {
         // Arrange
@@ -43,10 +50,10 @@ public class FoundationalTests : IClassFixture<WebApplicationFactory<Program>>
         // Assert
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();
-        Assert.Contains("Recipe Collection API", content);
+        Assert.That(content, Does.Contain("Recipe Collection API"));
     }
 
-    [Fact]
+    [Test]
     public async Task Response_IncludesCorrelationId()
     {
         // Arrange
@@ -56,10 +63,10 @@ public class FoundationalTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await client.GetAsync("/");
 
         // Assert
-        Assert.True(response.Headers.Contains("X-Correlation-Id"));
+        Assert.That(response.Headers.Contains("X-Correlation-Id"), Is.True);
     }
 
-    [Fact]
+    [Test]
     public async Task InvalidRequest_ReturnsValidationError()
     {
         // Arrange
@@ -75,6 +82,6 @@ public class FoundationalTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await client.PostAsJsonAsync("/recipes", invalidRecipe);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode); // Validation should return BadRequest
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest)); // Validation should return BadRequest
     }
 }

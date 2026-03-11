@@ -21,7 +21,8 @@ A **partial MVP implementation** of the Recipe Collection app has been completed
 
 ### Phase 1: Project Scaffolding
 - [x] Backend: .NET 10 (C# 12) Minimal API solution ([src/backend/](src/backend/))
-  - Solution structure: `RecipeApi` project + `RecipeApi.Tests` xUnit project
+  - Solution structure: `RecipeApi` project + `RecipeApi.Tests` NUnit test project
+  - Backend test stack: `NUnit`, `NSubstitute`, `Microsoft.NET.Test.Sdk`
   - NuGet packages: Cosmos DB, Azure Blob Storage, Azure Vision ImageAnalysis, FluentValidation
 - [x] Frontend: Vite 7 + React 19 + TypeScript 5.9 + Tailwind CSS 3 ([src/frontend/](src/frontend/))
   - Requires **Node.js 22 LTS** (enforced via `engines` in `package.json`)
