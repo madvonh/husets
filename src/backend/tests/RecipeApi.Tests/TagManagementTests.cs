@@ -1,8 +1,9 @@
 using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
-using RecipeApi.Models;
-using RecipeApi.Models.DTOs;
+using RecipeApi.DTOs;
+using RecipeApi.DTOs.RequestModels;
+using RecipeApi.DTOs.ResponseModels;
 
 namespace RecipeApi.Tests;
 

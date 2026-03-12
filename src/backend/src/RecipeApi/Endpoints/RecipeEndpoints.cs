@@ -1,7 +1,10 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using RecipeApi.Models;
-using RecipeApi.Models.DTOs;
+using RecipeApi.DomainModels;
+using RecipeApi.DTOs;
+using RecipeApi.DTOs.RequestModels;
+using RecipeApi.DTOs.ResponseModels;
+using RecipeApi.Repositories;
 using RecipeApi.Services;
 using RecipeApi.Utilities;
 
@@ -89,7 +92,7 @@ public static class RecipeEndpoints
         app.MapPost("/recipes", async (
             CreateRecipeRequest request,
             IValidator<CreateRecipeRequest> validator,
-            ICosmosDbService cosmosDb,
+            ICosmosDbRepository cosmosDb,
             IIngredientParser ingredientParser,
             ILogger<Program> logger) =>
         {
@@ -159,7 +162,7 @@ public static class RecipeEndpoints
 
         app.MapGet("/recipes/{id}", async (
             string id,
-            ICosmosDbService cosmosDb,
+            ICosmosDbRepository cosmosDb,
             ILogger<Program> logger) =>
         {
             try
@@ -207,7 +210,7 @@ public static class RecipeEndpoints
         app.MapGet("/recipes", async (
             string? query,
             string? tag,
-            ICosmosDbService cosmosDb,
+            ICosmosDbRepository cosmosDb,
             ILogger<Program> logger) =>
         {
             try
@@ -249,7 +252,7 @@ public static class RecipeEndpoints
             string id,
             AddTagRequest request,
             IValidator<AddTagRequest> validator,
-            ICosmosDbService cosmosDb,
+            ICosmosDbRepository cosmosDb,
             ILogger<Program> logger) =>
         {
             var validationResult = await validator.ValidateAsync(request);
@@ -320,7 +323,7 @@ public static class RecipeEndpoints
         app.MapDelete("/recipes/{id}/tags/{tag}", async (
             string id,
             string tag,
-            ICosmosDbService cosmosDb,
+            ICosmosDbRepository cosmosDb,
             ILogger<Program> logger) =>
         {
             try

@@ -1,8 +1,8 @@
 using Microsoft.Azure.Cosmos;
 
-namespace RecipeApi.Services;
+namespace RecipeApi.Repositories;
 
-public interface ICosmosDbService
+public interface ICosmosDbRepository
 {
     Task<T> CreateItemAsync<T>(T item, string partitionKey);
     Task<T?> GetItemAsync<T>(string id, string partitionKey);
@@ -11,13 +11,13 @@ public interface ICosmosDbService
     Task DeleteItemAsync(string id, string partitionKey);
 }
 
-public class CosmosDbService : ICosmosDbService
+public class CosmosDbRepository : ICosmosDbRepository
 {
     private readonly Container _container;
-    private readonly ILogger<CosmosDbService> _logger;
+    private readonly ILogger<CosmosDbRepository> _logger;
     private const int MaxRetries = 3;
 
-    public CosmosDbService(CosmosClient cosmosClient, IConfiguration configuration, ILogger<CosmosDbService> logger)
+    public CosmosDbRepository(CosmosClient cosmosClient, IConfiguration configuration, ILogger<CosmosDbRepository> logger)
     {
         var databaseName = configuration["CosmosDb:DatabaseName"] ?? throw new InvalidOperationException("CosmosDb:DatabaseName not configured");
         var containerName = configuration["CosmosDb:ContainerName"] ?? throw new InvalidOperationException("CosmosDb:ContainerName not configured");
