@@ -1,4 +1,4 @@
-namespace RecipeApi.DTOs;
+namespace RecipeApi.DTOs.ResponseModels;
 
 public class RecipeSummaryResponse
 {

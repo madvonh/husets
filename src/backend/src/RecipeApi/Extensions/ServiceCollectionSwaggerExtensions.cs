@@ -1,8 +1,5 @@
 using System.Reflection;
 using Microsoft.OpenApi;
-
-namespace RecipeApi.Extensions;
-
 public static class ServiceCollectionSwaggerExtensions
 {
     /// <summary>

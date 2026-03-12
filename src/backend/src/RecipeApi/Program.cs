@@ -57,7 +57,6 @@ app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseCors();
-app.UseHttpsRedirection();
 
 app.MapHealthChecks("/health");
 
