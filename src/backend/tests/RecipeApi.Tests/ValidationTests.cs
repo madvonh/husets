@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
-using RecipeApi.Models;
-using RecipeApi.Models.DTOs;
+using RecipeApi.DTOs.RequestModels;
+using RecipeApi.DTOs.ResponseModels;
 using RecipeApi.Services;
 
 namespace RecipeApi.Tests;

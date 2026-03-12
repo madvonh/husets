@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Azure.Cosmos;
+using RecipeApi.Repositories;
 
 namespace RecipeApi.Services;
 

@@ -1,6 +1,6 @@
 using Microsoft.Azure.Cosmos;
 
-namespace RecipeApi.Services;
+namespace RecipeApi.Repositories;
 
 public class CosmosDbInitializer : IHostedService
 {

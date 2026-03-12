@@ -2,9 +2,9 @@ using System.Collections.Concurrent;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-namespace RecipeApi.Services;
+namespace RecipeApi.Repositories;
 
-public class InMemoryCosmosDbService : ICosmosDbService
+public class InMemoryCosmosDbRepository : ICosmosDbRepository
 {
     private readonly ConcurrentDictionary<string, object> _store = new();
 

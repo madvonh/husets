@@ -1,4 +1,5 @@
-using RecipeApi.Models;
+
+using RecipeApi.DomainModels;
 
 namespace RecipeApi.Services;
 
@@ -30,7 +31,8 @@ public class IngredientParser : IIngredientParser
         foreach (var line in lines)
         {
             // Detect ingredients section
-            if (line.Contains("ingredient", StringComparison.OrdinalIgnoreCase))
+            if (line.Contains("ingredient", StringComparison.OrdinalIgnoreCase) ||
+                line.Contains("ingrediense", StringComparison.OrdinalIgnoreCase))
             {
                 inIngredientsSection = true;
                 continue;
@@ -39,6 +41,7 @@ public class IngredientParser : IIngredientParser
             // Stop when hitting instructions or method section
             if (line.Contains("instruction", StringComparison.OrdinalIgnoreCase) ||
                 line.Contains("method", StringComparison.OrdinalIgnoreCase) ||
+                line.Contains("instruktion", StringComparison.OrdinalIgnoreCase) ||
                 line.Contains("directions", StringComparison.OrdinalIgnoreCase))
             {
                 inIngredientsSection = false;
