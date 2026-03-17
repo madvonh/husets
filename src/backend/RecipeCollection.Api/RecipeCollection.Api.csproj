@@ -23,4 +23,8 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\RecipeCollection.ServiceDefaults\RecipeCollection.ServiceDefaults.csproj" />
+  </ItemGroup>
+
 </Project>
