@@ -2,16 +2,17 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Backend: Debug (RecipeApi)",
+      "name": "Backend: Debug (RecipeCollection.Api)",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build-backend",
-      "program": "${workspaceFolder}/src/backend/src/RecipeApi/bin/Debug/net10.0/RecipeApi.dll",
+      "program": "${workspaceFolder}/src/backend/RecipeCollection.Api/bin/Debug/net10.0/RecipeCollection.Api.dll",
       "args": [],
-      "cwd": "${workspaceFolder}/src/backend/src/RecipeApi",
+      "cwd": "${workspaceFolder}/src/backend/RecipeCollection.Api",
       "env": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_URLS": "https://localhost:7137;http://localhost:5137"
+        "ASPNETCORE_URLS": "https://localhost:7137;http://localhost:5137",
+        "CosmosDb__ConnectionString": "AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw=="
       }
     },
     {
@@ -40,7 +41,7 @@
     {
       "name": "Debug: Full Stack (Backend + Frontend)",
       "configurations": [
-        "Backend: Debug (RecipeApi)",
+        "Backend: Debug (RecipeCollection.Api)",
         "Frontend: Debug (Chrome)"
       ],
       "stopAll": true,

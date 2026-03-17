@@ -1,10 +1,13 @@
 using FluentValidation;
-using RecipeApi.Middleware;
-using RecipeApi.Services;
 using RecipeApi.Endpoints;
 using RecipeApi.Extensions;
+using RecipeApi.Middleware;
+using RecipeApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add Aspire ServiceDefaults for observability and resilience
+builder.AddServiceDefaults();
 
 var allowedOriginsSection = builder.Configuration.GetSection("AllowedOrigins");
 var allowedOrigins = allowedOriginsSection.Get<string[]>()
@@ -32,13 +35,10 @@ builder.Services.ConfigureOcrService(azureVisionEndpoint, azureVisionApiKey);
 
 builder.Services.AddTransient<IIngredientParser, IngredientParser>();
 
-builder.Services.AddHealthChecks()
-    .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy())
-    .AddCheck<CosmosDbHealthCheck>("cosmosdb");
-
-builder.Services.AddSingleton<CosmosDbHealthCheck>();
-
 var app = builder.Build();
+
+// Map Aspire ServiceDefaults endpoints
+app.MapDefaultEndpoints();
 
 if (app.Environment.IsDevelopment())
 {
@@ -58,7 +58,7 @@ app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseCors();
 
-app.MapHealthChecks("/health");
+//app.MapHealthChecks("/health");
 
 app.MapGet("/", () => Results.Ok(new { service = "Recipe Collection API", version = "1.0.0" }));
 
