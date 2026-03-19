@@ -1,0 +1,31 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recipecollection-frontend
+  labels:
+    app: recipecollection-frontend
+spec:
+  minReadySeconds: 60
+  replicas: 1
+  selector:
+    matchLabels:
+      app: recipecollection-frontend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: recipecollection-frontend
+    spec:
+      containers:
+      - name: recipecollection-frontend
+        image: madeleine/recipecollection-frontend:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: recipecollection-frontend-env
+      terminationGracePeriodSeconds: 180

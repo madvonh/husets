@@ -1,0 +1,17 @@
+resources:
+- deployment.yaml
+- service.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+- name: recipecollection-frontend-env
+  literals:
+    - NODE_ENV=development
+    - PORT=8000
+    - API_HTTP=http://api:8080
+    - services__api__http__0=http://api:8080
+    - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
+    - OTEL_SERVICE_NAME=recipecollection-frontend
+

@@ -5,6 +5,7 @@ var api = builder.AddProject<Projects.RecipeCollection_Api>("api")
     
     builder.AddViteApp(name: "recipecollection-frontend", appDirectory: "../../frontend" )
         .WithReference(api)
-        .WaitFor(api);
+        .WaitFor(api)
+        .WithExternalHttpEndpoints();
 
 builder.Build().Run();

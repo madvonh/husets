@@ -1,0 +1,12 @@
+namespace: recipecollection
+
+resources:
+- api
+- recipecollection-frontend
+- namespace.yaml
+- dashboard.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+
