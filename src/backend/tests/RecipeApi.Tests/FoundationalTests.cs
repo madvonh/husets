@@ -1,7 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using RecipeApi.DTOs.RequestModels;
+using RecipeCollection.DTOs.RequestModels;
 
 namespace RecipeApi.Tests;
 
@@ -13,7 +14,10 @@ public class FoundationalTests
     [OneTimeSetUp]
     public void SetUp()
     {
-        _factory = new WebApplicationFactory<Program>();
+        _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+        {
+            builder.UseSetting("ConnectionStrings:CosmosDb", "");
+        });
     }
 
     [OneTimeTearDown]
