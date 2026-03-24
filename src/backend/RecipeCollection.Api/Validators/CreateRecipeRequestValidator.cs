@@ -28,7 +28,7 @@ public class CreateRecipeRequestValidator : AbstractValidator<CreateRecipeReques
             .NotEmpty().WithMessage("Tag cannot be empty")
             .MinimumLength(2).WithMessage("Tag must be at least 2 characters")
             .MaximumLength(50).WithMessage("Tag must not exceed 50 characters")
-            .Matches("^[a-zäåöÅÄÖ0-9\\-]+$").WithMessage("Tag must contain only letters (including äåö), numbers, and hyphens")
+            .Matches("^[a-zäåö0-9\\-]+$").WithMessage("Tag must contain only letters (including äåö), numbers, and hyphens")
             .When(x => x.Tags != null);
     }
 }
