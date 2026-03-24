@@ -1,14 +1,14 @@
 using Newtonsoft.Json;
 
-namespace RecipeApi.DomainModels;
+namespace RecipeCollection.Domain;
 
-public class RecipeIngredient
+public class RecipeIngredient 
 {
     [JsonProperty("id")]
     public required string Id { get; set; }
 
     [JsonProperty("pk")]
-    public required string Pk { get; set; } = "recipe";
+    public string Pk { get; set; } = "recipe";
 
     [JsonProperty("type")]
     public string Type { get; set; } = "RecipeIngredient";

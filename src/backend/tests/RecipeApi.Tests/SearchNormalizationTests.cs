@@ -1,4 +1,4 @@
-using RecipeApi.Utilities;
+using RecipeCollection.Utilities;
 
 namespace RecipeApi.Tests;
 

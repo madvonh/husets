@@ -1,4 +1,4 @@
-namespace RecipeApi.DTOs.RequestModels;
+namespace RecipeCollection.DTOs.RequestModels;
 
 public class CreateRecipeRequest
 {

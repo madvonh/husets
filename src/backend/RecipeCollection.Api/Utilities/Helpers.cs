@@ -1,4 +1,4 @@
-namespace RecipeApi.Utilities;
+namespace RecipeCollection.Utilities;
 
 public static class TagNormalizer
 {

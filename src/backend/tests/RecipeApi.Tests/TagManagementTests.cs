@@ -1,9 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using RecipeApi.DTOs;
-using RecipeApi.DTOs.RequestModels;
-using RecipeApi.DTOs.ResponseModels;
+using RecipeCollection.DTOs;
+using RecipeCollection.DTOs.RequestModels;
+using RecipeCollection.DTOs.ResponseModels;
 
 namespace RecipeApi.Tests;
 
@@ -16,7 +17,10 @@ public class TagManagementTests
     [OneTimeSetUp]
     public void SetUp()
     {
-        _factory = new WebApplicationFactory<Program>();
+        _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+        {
+            builder.UseSetting("ConnectionStrings:CosmosDb", "");
+        });
         _client = _factory.CreateClient();
     }
 

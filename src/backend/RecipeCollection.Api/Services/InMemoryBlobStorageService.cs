@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace RecipeApi.Services;
+namespace RecipeCollection.Services;
 
 /// <summary>
 /// In-memory implementation of IBlobStorageService for testing and development

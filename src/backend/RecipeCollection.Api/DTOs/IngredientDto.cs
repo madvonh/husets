@@ -1,4 +1,4 @@
-namespace RecipeApi.DTOs;
+namespace RecipeCollection.DTOs;
 
 public class IngredientDto
 {

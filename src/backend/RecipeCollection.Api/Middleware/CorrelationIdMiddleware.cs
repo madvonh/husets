@@ -1,4 +1,4 @@
-namespace RecipeApi.Middleware;
+namespace RecipeCollection.Middleware;
 
 public class CorrelationIdMiddleware
 {

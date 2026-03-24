@@ -1,54 +1,44 @@
-using Microsoft.Azure.Cosmos;
-using RecipeApi.Repositories;
-using RecipeApi.Services;
+using Microsoft.EntityFrameworkCore;
+using RecipeCollection.Services;
+using RecipeCollection.Data;
 
-namespace RecipeApi.Extensions;
+namespace RecipeCollection.Extensions;
 
 public static class ServiceCollectionPersistenceExtensions
 {
     /// <summary>
-    /// Configures Cosmos DB services for the API, including the repository and initializer. If no connection string is provided, an in-memory implementation is registered for testing and local development.     
+    /// Registers RecipeDbContext using the Aspire Cosmos DB integration when the "CosmosDb" connection
+    /// string is present (i.e. running under AppHost), or falls back to an in-memory database for tests
+    /// and local runs without AppHost. After calling Build(), use EnsureCosmosCreatedAsync to create containers.
     /// </summary>
-    /// <param name="services">The service collection to add persistence services to.</param>
-    /// <param name="cosmosConnectionString">The Cosmos DB connection string.</param>
-    public static void ConfigureCosmosDb(this IServiceCollection services, string? cosmosConnectionString)
+    public static void ConfigureCosmosDb(this IHostApplicationBuilder builder)
     {
-        if (!string.IsNullOrEmpty(cosmosConnectionString))
+        if (!string.IsNullOrEmpty(builder.Configuration.GetConnectionString("CosmosDb")))
         {
-            var isLocalEmulator = cosmosConnectionString.Contains("localhost", StringComparison.OrdinalIgnoreCase)
-                            || cosmosConnectionString.Contains("127.0.0.1", StringComparison.Ordinal);
-
-            services.AddSingleton(_ =>
-            {
-                var options = new CosmosClientOptions();
-
-                if (isLocalEmulator)
-                {
-                    // Bypass SSL validation for the Cosmos DB Emulator's self-signed certificate (FR-011)
-                    options.ConnectionMode = ConnectionMode.Gateway;
-                    options.HttpClientFactory = () =>
-                    {
-                        var handler = new HttpClientHandler
-                        {
-                            ServerCertificateCustomValidationCallback =
-                                HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-                        };
-                        return new HttpClient(handler);
-                    };
-                }
-
-                return new CosmosClient(cosmosConnectionString, options);
-            });
-            services.AddSingleton<ICosmosDbRepository, CosmosDbRepository>();
-
-            // Auto-create database and container on startup (FR-004)
-            services.AddSingleton<CosmosDbInitializer>();
-            services.AddHostedService(sp => sp.GetRequiredService<CosmosDbInitializer>());
+            builder.AddCosmosDbContext<RecipeDbContext>("CosmosDb");
         }
         else
         {
-            // Fallback: provide an in-memory implementation so tests and local runs don't require Cosmos DB
-            services.AddSingleton<ICosmosDbRepository, InMemoryCosmosDbRepository>();
+            builder.Services.AddDbContext<RecipeDbContext>(options =>
+                options.UseInMemoryDatabase("RecipeCollection"));
+        }
+    }
+
+    /// <summary>
+    /// Ensures the database for the configured provider is created (for Cosmos DB this may create containers).
+    /// Call after app.Build().
+    /// </summary>
+    public static async Task EnsureCosmosCreatedAsync(this WebApplication app)
+    {
+        await using var scope = app.Services.CreateAsyncScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<RecipeDbContext>();
+        try 
+        { 
+            await dbContext.Database.EnsureCreatedAsync(); 
+        }
+        catch (Exception ex) 
+        { 
+            app.Logger.LogWarning(ex, "Could not initialize Cosmos DB; the app will continue."); 
         }
     }
 

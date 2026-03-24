@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
-using RecipeApi.DTOs.RequestModels;
-using RecipeApi.DTOs.ResponseModels;
-using RecipeApi.Services;
+using RecipeCollection.DTOs.RequestModels;
+using RecipeCollection.DTOs.ResponseModels;
+using RecipeCollection.Services;
 
 namespace RecipeApi.Tests;
 
@@ -26,6 +26,7 @@ public class ValidationTests
 
         _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
         {
+            builder.UseSetting("ConnectionStrings:CosmosDb", "");
             builder.UseEnvironment("Testing");
             builder.ConfigureTestServices(services =>
             {
@@ -206,7 +207,7 @@ public class ValidationTests
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
         Assert.That(error, Is.Not.Null);
-        Assert.That(error!.Message, Does.Contain("Tag must contain only lowercase letters, numbers, and hyphens"));
+        Assert.That(error!.Message, Does.Contain("Tag must contain only letters"));
     }
 
     [Test]

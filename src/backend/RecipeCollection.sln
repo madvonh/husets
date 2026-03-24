@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeCollection.Api", "RecipeCollection.Api\RecipeCollection.Api.csproj", "{19701CC5-F8FD-406C-BF9E-77881152DA4F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
@@ -14,6 +12,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeCollection.AppHost", "RecipeCollection.AppHost\RecipeCollection.AppHost.csproj", "{02A84060-B67A-4AFB-B6FE-52A2858C0421}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeCollection.ServiceDefaults", "RecipeCollection.ServiceDefaults\RecipeCollection.ServiceDefaults.csproj", "{921633A5-D700-46F8-8778-EB3DFF3097A5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeCollection.Data", "RecipeCollection.Data\RecipeCollection.Data.csproj", "{FB299906-D6F1-440F-9660-BE0994930CFA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeCollection.Domain", "RecipeCollection.Domain\RecipeCollection.Domain.csproj", "{9AF23DBA-4FD6-475B-8A33-F0FCBF375A82}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -73,12 +75,32 @@ Global
 		{921633A5-D700-46F8-8778-EB3DFF3097A5}.Release|x64.Build.0 = Release|Any CPU
 		{921633A5-D700-46F8-8778-EB3DFF3097A5}.Release|x86.ActiveCfg = Release|Any CPU
 		{921633A5-D700-46F8-8778-EB3DFF3097A5}.Release|x86.Build.0 = Release|Any CPU
+		{FB299906-D6F1-440F-9660-BE0994930CFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB299906-D6F1-440F-9660-BE0994930CFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB299906-D6F1-440F-9660-BE0994930CFA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FB299906-D6F1-440F-9660-BE0994930CFA}.Debug|x64.Build.0 = Debug|Any CPU
+		{FB299906-D6F1-440F-9660-BE0994930CFA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FB299906-D6F1-440F-9660-BE0994930CFA}.Debug|x86.Build.0 = Debug|Any CPU
+		{FB299906-D6F1-440F-9660-BE0994930CFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB299906-D6F1-440F-9660-BE0994930CFA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB299906-D6F1-440F-9660-BE0994930CFA}.Release|x64.ActiveCfg = Release|Any CPU
+		{FB299906-D6F1-440F-9660-BE0994930CFA}.Release|x64.Build.0 = Release|Any CPU
+		{FB299906-D6F1-440F-9660-BE0994930CFA}.Release|x86.ActiveCfg = Release|Any CPU
+		{FB299906-D6F1-440F-9660-BE0994930CFA}.Release|x86.Build.0 = Release|Any CPU
+		{9AF23DBA-4FD6-475B-8A33-F0FCBF375A82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9AF23DBA-4FD6-475B-8A33-F0FCBF375A82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9AF23DBA-4FD6-475B-8A33-F0FCBF375A82}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9AF23DBA-4FD6-475B-8A33-F0FCBF375A82}.Debug|x64.Build.0 = Debug|Any CPU
+		{9AF23DBA-4FD6-475B-8A33-F0FCBF375A82}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9AF23DBA-4FD6-475B-8A33-F0FCBF375A82}.Debug|x86.Build.0 = Debug|Any CPU
+		{9AF23DBA-4FD6-475B-8A33-F0FCBF375A82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9AF23DBA-4FD6-475B-8A33-F0FCBF375A82}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9AF23DBA-4FD6-475B-8A33-F0FCBF375A82}.Release|x64.ActiveCfg = Release|Any CPU
+		{9AF23DBA-4FD6-475B-8A33-F0FCBF375A82}.Release|x64.Build.0 = Release|Any CPU
+		{9AF23DBA-4FD6-475B-8A33-F0FCBF375A82}.Release|x86.ActiveCfg = Release|Any CPU
+		{9AF23DBA-4FD6-475B-8A33-F0FCBF375A82}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{19701CC5-F8FD-406C-BF9E-77881152DA4F} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
-		{3B306613-6685-4629-8961-CCDDDD20DF50} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal

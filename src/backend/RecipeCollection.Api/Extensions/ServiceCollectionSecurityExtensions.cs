@@ -1,4 +1,4 @@
-namespace RecipeApi.Extensions;
+namespace RecipeCollection.Extensions;
 
 public static class ServiceCollectionSecurityExtensions
 {

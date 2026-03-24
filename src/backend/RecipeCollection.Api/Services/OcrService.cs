@@ -2,7 +2,7 @@ using Azure.AI.Vision.ImageAnalysis;
 using Azure;
 using Tesseract;
 
-namespace RecipeApi.Services;
+namespace RecipeCollection.Services;
 
 public interface IOcrService
 {
