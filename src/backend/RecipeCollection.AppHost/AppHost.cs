@@ -1,6 +1,19 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
+var cosmos = builder.AddAzureCosmosDB("cosmos");
+
+if (!builder.ExecutionContext.IsPublishMode)
+{
+    cosmos.RunAsEmulator(emulator =>
+    {
+        emulator.WithLifetime(ContainerLifetime.Persistent);
+    });
+}
+
+var dbResource = cosmos.AddCosmosDatabase("cosmosdb");
+
 var api = builder.AddProject<Projects.RecipeCollection_Api>("api")
+    .WithReference(dbResource)
     .WithHttpHealthCheck("/health");
 
 if (builder.ExecutionContext.IsPublishMode)

@@ -1,6 +1,6 @@
-using RecipeApi.Services;
+using RecipeCollection.Services;
 
-namespace RecipeApi.Extensions;
+namespace RecipeCollection.Extensions;
 
 public static class ServiceCollectionAIServicesExtensions
 {

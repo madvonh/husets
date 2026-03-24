@@ -1,9 +1,9 @@
 using System.Net;
 using System.Text.Json;
 using FluentValidation;
-using RecipeApi.DTOs.ResponseModels;
+using RecipeCollection.DTOs.ResponseModels;
 
-namespace RecipeApi.Middleware;
+namespace RecipeCollection.Middleware;
 
 public class GlobalExceptionMiddleware
 {

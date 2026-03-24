@@ -1,8 +1,8 @@
 using FluentValidation;
-using RecipeApi.Endpoints;
-using RecipeApi.Extensions;
-using RecipeApi.Middleware;
-using RecipeApi.Services;
+using RecipeCollection.Endpoints;
+using RecipeCollection.Extensions;
+using RecipeCollection.Middleware;
+using RecipeCollection.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,9 +22,7 @@ builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.ConfigureSwaggerGen();
 
-var cosmosConnectionString = builder.Configuration["CosmosDb:ConnectionString"];
-builder.Services.ConfigureCosmosDb(cosmosConnectionString);
-   
+builder.ConfigureCosmosDb();
 
 var blobConnectionString = builder.Configuration["BlobStorage:ConnectionString"];
 builder.Services.ConfigureBlobStorage(blobConnectionString);
@@ -64,7 +62,9 @@ app.MapGet("/", () => Results.Ok(new { service = "Recipe Collection API", versio
 
 app.MapRecipeEndpoints();
 
-app.Run();
+await app.EnsureCosmosCreatedAsync();
+
+await app.RunAsync();
 
 // Make Program accessible to tests
 public partial class Program { }

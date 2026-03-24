@@ -1,14 +1,15 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using RecipeApi.DomainModels;
-using RecipeApi.DTOs;
-using RecipeApi.DTOs.RequestModels;
-using RecipeApi.DTOs.ResponseModels;
-using RecipeApi.Repositories;
-using RecipeApi.Services;
-using RecipeApi.Utilities;
+using Microsoft.EntityFrameworkCore;
+using RecipeCollection.DTOs;
+using RecipeCollection.DTOs.RequestModels;
+using RecipeCollection.DTOs.ResponseModels;
+using RecipeCollection.Services;
+using RecipeCollection.Data;
+using RecipeCollection.Domain;
+using RecipeCollection.Utilities;
 
-namespace RecipeApi.Endpoints;
+namespace RecipeCollection.Endpoints;
 
 public static class RecipeEndpoints
 {
@@ -92,7 +93,7 @@ public static class RecipeEndpoints
         app.MapPost("/recipes", async (
             CreateRecipeRequest request,
             IValidator<CreateRecipeRequest> validator,
-            ICosmosDbRepository cosmosDb,
+            RecipeDbContext dbContext,
             IIngredientParser ingredientParser,
             ILogger<Program> logger) =>
         {
@@ -119,6 +120,7 @@ public static class RecipeEndpoints
                 {
                     Id = recipeId,
                     Pk = "recipe",
+                    Type = "Recipe",
                     Title = request.Title,
                     RawText = request.RawText,
                     ImageRef = request.ImageRef,
@@ -126,14 +128,17 @@ public static class RecipeEndpoints
                     NormalizedTags = normalizedTags
                 };
 
-                await cosmosDb.CreateItemAsync(recipe, "recipe");
+                dbContext.Recipes.Add(recipe);
 
                 // Parse and store ingredients
                 var ingredients = ingredientParser.ParseIngredients(request.RawText, recipeId);
                 foreach (var ingredient in ingredients)
                 {
-                    await cosmosDb.CreateItemAsync(ingredient, "recipe");
+                    ingredient.Type = "RecipeIngredient";
                 }
+                dbContext.RecipeIngredients.AddRange(ingredients);
+
+                await dbContext.SaveChangesAsync();
 
                 logger.LogInformation("Created recipe: {RecipeId} with {IngredientCount} ingredients", recipeId, ingredients.Count);
 
@@ -162,12 +167,15 @@ public static class RecipeEndpoints
 
         app.MapGet("/recipes/{id}", async (
             string id,
-            ICosmosDbRepository cosmosDb,
+            RecipeDbContext dbContext,
             ILogger<Program> logger) =>
         {
             try
             {
-                var recipe = await cosmosDb.GetItemAsync<Recipe>(id, "recipe");
+                var recipe = await dbContext.Recipes
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(recipe => recipe.Id == id && recipe.Pk == "recipe");
+
                 if (recipe == null)
                 {
                     return Results.NotFound(new ErrorResponse
@@ -177,12 +185,11 @@ public static class RecipeEndpoints
                     });
                 }
 
-                // Fetch ingredients (query by recipeId)
-                var ingredientsQuery = $"SELECT * FROM c WHERE c.type = 'RecipeIngredient' AND c.recipeId = @recipeId ORDER BY c.position";
-                var ingredients = await cosmosDb.QueryItemsAsync<RecipeIngredient>(ingredientsQuery, new Dictionary<string, object>
-                {
-                    { "@recipeId", id }
-                });
+                var ingredients = await dbContext.RecipeIngredients
+                    .AsNoTracking()
+                    .Where(ingredient => ingredient.RecipeId == id && ingredient.Pk == "recipe")
+                    .OrderBy(ingredient => ingredient.Position)
+                    .ToListAsync();
 
                 return Results.Ok(new RecipeDetailResponse
                 {
@@ -210,13 +217,15 @@ public static class RecipeEndpoints
         app.MapGet("/recipes", async (
             string? query,
             string? tag,
-            ICosmosDbRepository cosmosDb,
+            RecipeDbContext dbContext,
             ILogger<Program> logger) =>
         {
             try
             {
-                // Fetch all recipes and apply in-memory filters for MVP
-                var recipes = await cosmosDb.QueryItemsAsync<Recipe>("SELECT * FROM c WHERE c.type = 'Recipe'");
+                var recipes = await dbContext.Recipes
+                    .AsNoTracking()
+                    .Where(recipe => recipe.Pk == "recipe")
+                    .ToListAsync();
 
                 if (!string.IsNullOrWhiteSpace(tag))
                 {
@@ -252,7 +261,7 @@ public static class RecipeEndpoints
             string id,
             AddTagRequest request,
             IValidator<AddTagRequest> validator,
-            ICosmosDbRepository cosmosDb,
+            RecipeDbContext dbContext,
             ILogger<Program> logger) =>
         {
             var validationResult = await validator.ValidateAsync(request);
@@ -268,7 +277,9 @@ public static class RecipeEndpoints
 
             try
             {
-                var recipe = await cosmosDb.GetItemAsync<Recipe>(id, "recipe");
+                var recipe = await dbContext.Recipes
+                    .FirstOrDefaultAsync(entity => entity.Id == id && entity.Pk == "recipe");
+
                 if (recipe == null)
                 {
                     return Results.NotFound(new ErrorResponse
@@ -285,15 +296,14 @@ public static class RecipeEndpoints
                 {
                     recipe.NormalizedTags.Add(normalizedTag);
                     recipe.UpdatedAt = DateTime.UtcNow;
-                    await cosmosDb.UpdateItemAsync(recipe, id, "recipe");
+                    await dbContext.SaveChangesAsync();
                 }
 
-                // Fetch ingredients for response
-                var ingredientsQuery = $"SELECT * FROM c WHERE c.type = 'RecipeIngredient' AND c.recipeId = @recipeId ORDER BY c.position";
-                var ingredients = await cosmosDb.QueryItemsAsync<RecipeIngredient>(ingredientsQuery, new Dictionary<string, object>
-                {
-                    { "@recipeId", id }
-                });
+                var ingredients = await dbContext.RecipeIngredients
+                    .AsNoTracking()
+                    .Where(ingredient => ingredient.RecipeId == id && ingredient.Pk == "recipe")
+                    .OrderBy(ingredient => ingredient.Position)
+                    .ToListAsync();
 
                 logger.LogInformation("Added tag '{Tag}' to recipe: {RecipeId}", normalizedTag, id);
 
@@ -323,12 +333,14 @@ public static class RecipeEndpoints
         app.MapDelete("/recipes/{id}/tags/{tag}", async (
             string id,
             string tag,
-            ICosmosDbRepository cosmosDb,
+            RecipeDbContext dbContext,
             ILogger<Program> logger) =>
         {
             try
             {
-                var recipe = await cosmosDb.GetItemAsync<Recipe>(id, "recipe");
+                var recipe = await dbContext.Recipes
+                    .FirstOrDefaultAsync(entity => entity.Id == id && entity.Pk == "recipe");
+
                 if (recipe == null)
                 {
                     return Results.NotFound(new ErrorResponse
@@ -345,15 +357,14 @@ public static class RecipeEndpoints
                 {
                     recipe.NormalizedTags.Remove(normalizedTag);
                     recipe.UpdatedAt = DateTime.UtcNow;
-                    await cosmosDb.UpdateItemAsync(recipe, id, "recipe");
+                    await dbContext.SaveChangesAsync();
                 }
 
-                // Fetch ingredients for response
-                var ingredientsQuery = $"SELECT * FROM c WHERE c.type = 'RecipeIngredient' AND c.recipeId = @recipeId ORDER BY c.position";
-                var ingredients = await cosmosDb.QueryItemsAsync<RecipeIngredient>(ingredientsQuery, new Dictionary<string, object>
-                {
-                    { "@recipeId", id }
-                });
+                var ingredients = await dbContext.RecipeIngredients
+                    .AsNoTracking()
+                    .Where(ingredient => ingredient.RecipeId == id && ingredient.Pk == "recipe")
+                    .OrderBy(ingredient => ingredient.Position)
+                    .ToListAsync();
 
                 logger.LogInformation("Removed tag '{Tag}' from recipe: {RecipeId}", normalizedTag, id);
 

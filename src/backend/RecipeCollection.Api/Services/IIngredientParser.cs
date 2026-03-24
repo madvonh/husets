@@ -1,7 +1,7 @@
 
-using RecipeApi.DomainModels;
+using RecipeCollection.Domain;
 
-namespace RecipeApi.Services;
+namespace RecipeCollection.Services;
 
 public interface IIngredientParser
 {

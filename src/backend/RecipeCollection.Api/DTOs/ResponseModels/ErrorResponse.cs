@@ -1,4 +1,4 @@
-namespace RecipeApi.DTOs.ResponseModels;
+namespace RecipeCollection.DTOs.ResponseModels;
 
 public class ErrorResponse
 {
