@@ -25,7 +25,8 @@ public static class ServiceCollectionPersistenceExtensions
     }
 
     /// <summary>
-    /// Ensures Cosmos DB containers exist. Call after app.Build(). No-op for in-memory.
+    /// Ensures the database for the configured provider is created (for Cosmos DB this may create containers).
+    /// Call after app.Build().
     /// </summary>
     public static async Task EnsureCosmosCreatedAsync(this WebApplication app)
     {
