@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -27,9 +26,6 @@ public static class Extensions
 
         builder.Services.ConfigureHttpClientDefaults(http =>
         {
-            // Turn on resilience by default
-            //http.AddStandardResilienceHandler();
-
             // examples of some resilience customization
             http.AddStandardResilienceHandler(opts =>
             {
@@ -38,7 +34,9 @@ public static class Extensions
                 opts.Retry.MaxRetryAttempts = 7;
                 opts.CircuitBreaker.BreakDuration = TimeSpan.FromSeconds(30);
             });
-            http.AddStandardHedgingHandler();
+
+            // Uncomment the following line to enable standard hedging. It is disabled by default since it can cause increased load on services if not used carefully. 
+            // http.AddStandardHedgingHandler();
 
             // Turn on service discovery by default
             http.AddServiceDiscovery();
