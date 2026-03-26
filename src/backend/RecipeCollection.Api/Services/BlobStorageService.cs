@@ -15,16 +15,9 @@ public class BlobStorageService : IBlobStorageService
     private readonly BlobContainerClient _containerClient;
     private readonly ILogger<BlobStorageService> _logger;
 
-    public BlobStorageService(IConfiguration configuration, ILogger<BlobStorageService> logger)
+    public BlobStorageService(BlobServiceClient blobServiceClient, IConfiguration configuration, ILogger<BlobStorageService> logger)
     {
-        var connectionString = configuration["BlobStorage:ConnectionString"];
-        if (string.IsNullOrEmpty(connectionString))
-        {
-            throw new InvalidOperationException("BlobStorage:ConnectionString not configured");
-        }
-
         var containerName = configuration["BlobStorage:ContainerName"] ?? "recipe-images";
-        var blobServiceClient = new BlobServiceClient(connectionString);
         _containerClient = blobServiceClient.GetBlobContainerClient(containerName);
         _logger = logger;
 
