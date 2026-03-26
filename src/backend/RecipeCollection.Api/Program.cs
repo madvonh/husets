@@ -54,9 +54,10 @@ if (!app.Environment.IsDevelopment())
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
-app.UseCors();
+app.UseRequestTimeouts();
+app.UseOutputCache();
 
-//app.MapHealthChecks("/health");
+app.UseCors();
 
 app.MapGet("/", () => Results.Ok(new { service = "Recipe Collection API", version = "1.0.0" }));
 

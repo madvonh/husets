@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -27,8 +26,17 @@ public static class Extensions
 
         builder.Services.ConfigureHttpClientDefaults(http =>
         {
-            // Turn on resilience by default
-            http.AddStandardResilienceHandler();
+            // examples of some resilience customization
+            http.AddStandardResilienceHandler(opts =>
+            {
+                opts.AttemptTimeout.Timeout = TimeSpan.FromSeconds(5);
+                opts.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(60);
+                opts.Retry.MaxRetryAttempts = 7;
+                opts.CircuitBreaker.BreakDuration = TimeSpan.FromSeconds(30);
+            });
+
+            // Uncomment the following line to enable standard hedging. It is disabled by default since it can cause increased load on services if not used carefully. 
+            // http.AddStandardHedgingHandler();
 
             // Turn on service discovery by default
             http.AddServiceDiscovery();
@@ -98,6 +106,16 @@ public static class Extensions
 
     public static TBuilder AddDefaultHealthChecks<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
+        builder.Services.AddRequestTimeouts( 
+        configure: static timeouts =>
+            timeouts.AddPolicy("HealthChecks", TimeSpan.FromSeconds(5)));
+
+        builder.Services.AddOutputCache(
+            configureOptions: static caching =>
+                caching.AddPolicy("HealthChecks",
+                build: static policy => policy.Expire(TimeSpan.FromSeconds(10))));
+
+
         builder.Services.AddHealthChecks()
             // Add a default liveness check to ensure app is responsive
             .AddCheck("self", () => HealthCheckResult.Healthy(), ["live"]);
@@ -107,19 +125,22 @@ public static class Extensions
 
     public static WebApplication MapDefaultEndpoints(this WebApplication app)
     {
-        // Adding health checks endpoints to applications in non-development environments has security implications.
-        // See https://aka.ms/dotnet/aspire/healthchecks for details before enabling these endpoints in non-development environments.
-        if (app.Environment.IsDevelopment())
-        {
-            // All health checks must pass for app to be considered ready to accept traffic after starting
-            app.MapHealthChecks(HealthEndpointPath);
+        var healthChecks = app.MapGroup("");
 
-            // Only health checks tagged with the "live" tag must pass for app to be considered alive
-            app.MapHealthChecks(AlivenessEndpointPath, new HealthCheckOptions
-            {
-                Predicate = r => r.Tags.Contains("live")
-            });
-        }
+        healthChecks
+            .CacheOutput("HealthChecks")
+            .WithRequestTimeout("HealthChecks");
+
+        // All health checks must pass for app to be
+        // considered ready to accept traffic after starting
+        healthChecks.MapHealthChecks(HealthEndpointPath);
+
+        // Only health checks tagged with the "live" tag
+        // must pass for app to be considered alive
+        healthChecks.MapHealthChecks(AlivenessEndpointPath, new()
+        {
+            Predicate = static r => r.Tags.Contains("live")
+        });
 
         return app;
     }
