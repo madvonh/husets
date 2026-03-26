@@ -43,21 +43,21 @@ public static class ServiceCollectionPersistenceExtensions
     }
 
     /// <summary>
-    /// Configures blob storage services for the API. If a connection string is provided, it registers the BlobStorageService; otherwise, it falls back to an in-memory implementation for testing and local development.
+    /// Configures blob storage services for the API. When running under Aspire, uses the
+    /// "blobs" connection string injected via WithReference; otherwise falls back to an
+    /// in-memory implementation for tests and local runs without AppHost.
     /// </summary>
-    /// <param name="services">The service collection to add the blob storage service to.</param>
-    /// <param name="blobConnectionString">The blob storage connection string.</param>
-    public static void ConfigureBlobStorage(this IServiceCollection services, string? blobConnectionString)
+    public static void ConfigureBlobStorage(this IHostApplicationBuilder builder)
     {
-        
-        if (!string.IsNullOrEmpty(blobConnectionString))
+        if (!string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("blobs")))
         {
-            services.AddSingleton<IBlobStorageService, BlobStorageService>();
+            builder.AddAzureBlobServiceClient("blobs");
+            builder.Services.AddSingleton<IBlobStorageService, BlobStorageService>();
         }
         else
         {
             // Fallback: provide an in-memory implementation for tests and local runs
-            services.AddSingleton<IBlobStorageService, InMemoryBlobStorageService>();
+            builder.Services.AddSingleton<IBlobStorageService, InMemoryBlobStorageService>();
         }
     }
 }

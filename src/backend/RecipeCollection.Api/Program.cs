@@ -24,8 +24,7 @@ builder.Services.ConfigureSwaggerGen();
 
 builder.ConfigureCosmosDb();
 
-var blobConnectionString = builder.Configuration["BlobStorage:ConnectionString"];
-builder.Services.ConfigureBlobStorage(blobConnectionString);
+builder.ConfigureBlobStorage();
 
 var azureVisionEndpoint = builder.Configuration["AzureVision:Endpoint"];
 var azureVisionApiKey = builder.Configuration["AzureVision:ApiKey"];

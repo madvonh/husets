@@ -2,18 +2,29 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 var cosmos = builder.AddAzureCosmosDB("cosmos");
 
+var storage = builder.AddAzureStorage("storage");
+
 if (!builder.ExecutionContext.IsPublishMode)
 {
     cosmos.RunAsEmulator(emulator =>
     {
         emulator.WithLifetime(ContainerLifetime.Persistent);
     });
+
+    storage.RunAsEmulator(emulator =>
+    {
+        emulator.WithLifetime(ContainerLifetime.Persistent);
+    });
 }
 
 var dbResource = cosmos.AddCosmosDatabase("cosmosdb");
+var blobs = storage.AddBlobs("blobs");
 
 var api = builder.AddProject<Projects.RecipeCollection_Api>("api")
     .WithReference(dbResource)
+    .WithReference(blobs)
+    .WaitFor(dbResource)
+    .WaitFor(blobs)
     .WithHttpHealthCheck("/health");
 
 if (builder.ExecutionContext.IsPublishMode)

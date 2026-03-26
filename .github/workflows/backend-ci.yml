@@ -25,7 +25,7 @@ jobs:
       - name: Setup .NET SDK (pinned to global.json)
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.103'
+          dotnet-version: '10.0.201'
 
       - name: Verify SDK version matches global.json
         shell: pwsh
