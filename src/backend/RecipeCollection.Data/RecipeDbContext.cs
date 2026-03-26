@@ -27,6 +27,7 @@ public class RecipeDbContext : DbContext
 
         modelBuilder.Entity<RecipeIngredient>()
             .ToContainer(nameof(RecipeIngredient))
+            .HasPartitionKey(i => i.Pk)
             .HasOne<Recipe>();
     }
 }
