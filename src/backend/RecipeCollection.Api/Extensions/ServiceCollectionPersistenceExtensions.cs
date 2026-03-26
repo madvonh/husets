@@ -49,7 +49,7 @@ public static class ServiceCollectionPersistenceExtensions
     /// </summary>
     public static void ConfigureBlobStorage(this IHostApplicationBuilder builder)
     {
-        if (builder.Configuration.GetConnectionString("blobs") != null)
+        if (!string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("blobs")))
         {
             builder.AddAzureBlobServiceClient("blobs");
             builder.Services.AddSingleton<IBlobStorageService, BlobStorageService>();
