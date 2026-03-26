@@ -106,9 +106,6 @@ public static class Extensions
 
     public static TBuilder AddDefaultHealthChecks<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
-        builder.Services.AddRequestTimeouts();
-        builder.Services.AddOutputCache();
-
         builder.Services.AddRequestTimeouts( 
         configure: static timeouts =>
             timeouts.AddPolicy("HealthChecks", TimeSpan.FromSeconds(5)));
@@ -136,17 +133,14 @@ public static class Extensions
 
         // All health checks must pass for app to be
         // considered ready to accept traffic after starting
-        healthChecks.MapHealthChecks("/health");
+        healthChecks.MapHealthChecks(HealthEndpointPath);
 
         // Only health checks tagged with the "live" tag
         // must pass for app to be considered alive
-        healthChecks.MapHealthChecks("/alive", new()
+        healthChecks.MapHealthChecks(AlivenessEndpointPath, new()
         {
             Predicate = static r => r.Tags.Contains("live")
         });
-
-        app.UseRequestTimeouts();
-        app.UseOutputCache();
 
         return app;
     }

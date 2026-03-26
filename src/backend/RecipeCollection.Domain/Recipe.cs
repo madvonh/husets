@@ -8,7 +8,7 @@ public class Recipe
     public required string Id { get; set; }
 
     [JsonProperty("pk")]
-    public string Pk { get; set; } = "recipe";
+    public required string Pk { get; set; } = "recipe";
 
     [JsonProperty("type")]
     public string Type { get; set; } = "Recipe";
