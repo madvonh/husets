@@ -217,3 +217,17 @@ dotnet test
 - [OpenAPI Contract (specs/001-recipe-collection/contracts/openapi.yaml)](specs/001-recipe-collection/contracts/openapi.yaml)
 - [Data Model (specs/001-recipe-collection/data-model.md)](specs/001-recipe-collection/data-model.md)
 - [Tasks (specs/001-recipe-collection/tasks.md)](specs/001-recipe-collection/tasks.md)
+
+
+In your current Aspire run, Blob storage is Azurite on:
+
+Cosmosdb emulator endpoint:
+https://127.0.0.1:58053/_explorer/index.html
+
+Download Azure Storage Explorer and connect to with connectionstring:
+
+DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:58090/devstoreaccount1;QueueEndpoint=http://127.0.0.1:58089/devstoreaccount1;TableEndpoint=http://127.0.0.1:58091/devstoreaccount1;
+
+Blob endpoint: http://127.0.0.1:58090/devstoreaccount1
+Queue endpoint: http://127.0.0.1:58089/devstoreaccount1
+Table endpoint: http://127.0.0.1:58091/devstoreaccount1

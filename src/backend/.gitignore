@@ -83,3 +83,5 @@ obj/
 # Settings and configuration files #
 ##############################
 appsettings.local.json
+
+.azure
