@@ -1,0 +1,118 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.41.2.15936",
+      "templateHash": "3707799512262233291"
+    }
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "The location for the resource(s) to be deployed."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts",
+      "apiVersion": "2024-08-15",
+      "name": "[take(format('cosmos-{0}', uniqueString(resourceGroup().id)), 44)]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "locations": [
+          {
+            "locationName": "[parameters('location')]",
+            "failoverPriority": 0
+          }
+        ],
+        "capabilities": [
+          {
+            "name": "EnableServerless"
+          }
+        ],
+        "consistencyPolicy": {
+          "defaultConsistencyLevel": "Session"
+        },
+        "databaseAccountOfferType": "Standard",
+        "disableLocalAuth": true
+      },
+      "kind": "GlobalDocumentDB",
+      "tags": {
+        "aspire-resource-name": "cosmos"
+      }
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases",
+      "apiVersion": "2024-08-15",
+      "name": "[format('{0}/{1}', take(format('cosmos-{0}', uniqueString(resourceGroup().id)), 44), 'cosmosdb')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "resource": {
+          "id": "cosmosdb"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', take(format('cosmos-{0}', uniqueString(resourceGroup().id)), 44))]"
+      ]
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+      "apiVersion": "2024-08-15",
+      "name": "[format('{0}/{1}/{2}', take(format('cosmos-{0}', uniqueString(resourceGroup().id)), 44), 'cosmosdb', 'Recipe')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "resource": {
+          "id": "Recipe",
+          "partitionKey": {
+            "paths": [
+              "/Pk"
+            ],
+            "kind": "Hash"
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', take(format('cosmos-{0}', uniqueString(resourceGroup().id)), 44), 'cosmosdb')]"
+      ]
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+      "apiVersion": "2024-08-15",
+      "name": "[format('{0}/{1}/{2}', take(format('cosmos-{0}', uniqueString(resourceGroup().id)), 44), 'cosmosdb', 'RecipeIngredient')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "resource": {
+          "id": "RecipeIngredient",
+          "partitionKey": {
+            "paths": [
+              "/Pk"
+            ],
+            "kind": "Hash"
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', take(format('cosmos-{0}', uniqueString(resourceGroup().id)), 44), 'cosmosdb')]"
+      ]
+    }
+  ],
+  "outputs": {
+    "connectionString": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.DocumentDB/databaseAccounts', take(format('cosmos-{0}', uniqueString(resourceGroup().id)), 44)), '2024-08-15').documentEndpoint]"
+    },
+    "name": {
+      "type": "string",
+      "value": "[take(format('cosmos-{0}', uniqueString(resourceGroup().id)), 44)]"
+    },
+    "id": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.DocumentDB/databaseAccounts', take(format('cosmos-{0}', uniqueString(resourceGroup().id)), 44))]"
+    }
+  }
+}

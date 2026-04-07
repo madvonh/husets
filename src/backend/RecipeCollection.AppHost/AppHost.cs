@@ -20,23 +20,25 @@ if (!builder.ExecutionContext.IsPublishMode)
 var dbResource = cosmos.AddCosmosDatabase("cosmosdb");
 var blobs = storage.AddBlobs("blobs");
 
-var api = builder.AddProject<Projects.RecipeCollection_Api>("api")
-    .WithReference(dbResource)
-    .WithReference(blobs)
-    .WaitFor(dbResource)
-    .WaitFor(blobs)
-    .WithHttpHealthCheck("/health");
-
 if (builder.ExecutionContext.IsPublishMode)
 {
+    var api = builder.AddDockerfile(name: "api", contextPath: "..")
+        .WithReference(dbResource)
+        .WithReference(blobs)
+        .WaitFor(dbResource)
+        .WaitFor(blobs);
+
     builder.AddDockerfile(name: "frontend", contextPath: "../../frontend")
-        .WithHttpEndpoint(targetPort: 80, name: "http")
-        .WithExternalHttpEndpoints()
-        .WithReference(api)
-        .WaitFor(api);
+        .WithExternalHttpEndpoints();
 }
 else
 {
+    var api = builder.AddProject<Projects.RecipeCollection_Api>("api")
+        .WithReference(dbResource)
+        .WithReference(blobs)
+        .WaitFor(dbResource)
+        .WaitFor(blobs);
+
     builder.AddViteApp(name: "frontend", appDirectory: "../../frontend")
         .WithExternalHttpEndpoints()
         .WithReference(api)

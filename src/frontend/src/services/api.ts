@@ -1,6 +1,6 @@
 import type { OcrResponse, Recipe, RecipeSummary, CreateRecipeRequest, ErrorResponse } from '../types'
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://localhost:7137').replace(/\/+$/, '')
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/+$/, '')
 
 class ApiError extends Error {
   constructor(
