@@ -2,8 +2,13 @@ import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, '.', 'VITE_')
+  const apiProxyTarget = env.VITE_API_PROXY_TARGET
+
+  if (command === 'serve' && !apiProxyTarget) {
+    throw new Error('Missing VITE_API_PROXY_TARGET. Set it in your environment or .env file.')
+  }
 
   return {
     plugins: [react()],
@@ -12,7 +17,7 @@ export default defineConfig(({ mode }) => {
       open: true,
       proxy: {
         '/api': {
-          target: env.VITE_API_PROXY_TARGET || 'https://localhost:7137',
+          target: apiProxyTarget || '',
           changeOrigin: true,
           secure: false,
           rewrite: (path) => path.replace(/^\/api/, ''),
